@@ -1,4 +1,4 @@
-import { Stocks } from '/stocks/classes/stocks.js'
+import { Stocks } from '/classes/stocks.js'
 import { currencyAbrev } from '/helper/convert-money.js'
 
 const BULL_MARKET = 0.6; //Default 0.6. A stock has a 60% chance of increasing in price
