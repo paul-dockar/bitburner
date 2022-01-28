@@ -1,5 +1,5 @@
-import { find } from '/find-hack-target.js'
-import { treeScan } from '/tree-scan.js'
+import { find } from '/old/find-hack-target.js'
+import { treeScan } from '/old/tree-scan.js'
 
 /** 
  * @param {NS} ns 

@@ -1,11 +1,12 @@
-import { treeSearchAlgorithm } from '/scripts/tree-search-algorithm.js'
-import { find } from '/scripts/find.js'
-import { prepareServer } from '/scripts/prepare.js'
+import { treeSearchAlgorithm } from '/hack/tree-search-algorithm.js'
+import { find } from '/hack/find.js'
+import { prepareServer } from '/hack/prepare.js'
 
 /** @param {NS} ns **/
 export async function main(ns) {
-    ns.disableLog("sleep");
-    ns.disableLog("getServerMaxMoney");
+    ns.tail();
+    //ns.disableLog("sleep");
+    //ns.disableLog("getServerMaxMoney");
     if (!ns.fileExists("Formulas.exe")) {
         ns.tprint("Buy Formulas.exe to run this script");
         ns.exit;
@@ -18,8 +19,9 @@ export async function main(ns) {
 
     for (let server of serverList) {
         //ns.tprint("Name: " + server.hostname + ". Child: " + server.children + ". Parent: " + server.parent);
-        await prepareServer(ns, server);
-
+        let serverInfo = ns.getServer(server.hostname);
+        if (!serverInfo.purchasedByPlayer && !serverInfo.moneyMax == 0) {
+            await prepareServer(ns, server);
+        }
     }
-
 }

@@ -1,4 +1,4 @@
-import { treeScan } from '/tree-scan.js'
+import { treeScan } from '/old/tree-scan.js'
 
 /** @param {NS} ns **/
 export async function main(ns) {

@@ -1,4 +1,5 @@
-import { treeSearchAlgorithm } from '/scripts/tree-search-algorithm.js';
+import { treeSearchAlgorithm } from '/hack/tree-search-algorithm.js';
+import { sortMap } from '/helper/array-sort.js'
 //import { Server } from '/classes/server.js';
 
 
@@ -11,7 +12,7 @@ export async function main(ns) {
 /** 
  * @param  {NS} ns
  * @param  {Array<Object>} list 
- * @return {String} string
+ * @returns {String} string
  */
 export function find(ns, list) {
     let map = new Map();
@@ -29,21 +30,4 @@ export function find(ns, list) {
     for (let x of sortedMap) {
         //ns.tprint(x);
     }
-}
-
-/** 
- * @description - Takes a Map, converts into an array and sorts on the map.value, converts to map and return.
- * @param  {Map} m
- * @return {Map}
- */
-function sortMap(m) {
-    let a = [];
-    for (let x of m)
-        a.push(x);
-
-    a.sort(function(x, y) {
-        return x[1] - y[1];
-    });
-
-    return new Map(a);
 }

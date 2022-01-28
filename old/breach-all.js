@@ -1,4 +1,4 @@
-import { treeScan } from '/tree-scan.js'
+import { treeScan } from '/old/tree-scan.js'
 
 /** @param {NS} ns **/
 export async function main(ns) {
@@ -14,6 +14,12 @@ function breach(ns, targets) {
     }
 }
 
+/**
+ * 
+ * @param {*} ns 
+ * @param {*} target 
+ * @returns 
+ */
 function runExeHacks(ns, target) {
     let ports = 0;
     if (ns.fileExists("BruteSSH.exe", "home")) {
@@ -39,6 +45,12 @@ function runExeHacks(ns, target) {
     return ports;
 }
 
+/**
+ * 
+ * @param {*} ns 
+ * @param {*} target 
+ * @param {*} openPorts 
+ */
 function runNuke(ns, target, openPorts) {
     let portsRequired = ns.getServerNumPortsRequired(target)
     if (openPorts >= portsRequired) {

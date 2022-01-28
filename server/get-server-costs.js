@@ -16,8 +16,12 @@ export async function main(ns) {
     }
 }
 
-/** @param {number} bytes 
- * **/
+/**
+ * 
+ * @param {number} bytes 
+ * @param {number} decimals 
+ * @returns 
+ */
 function formatBytes(bytes, decimals = 2) {
     if (bytes === 0) return '0 Bytes';
 
