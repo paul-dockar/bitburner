@@ -1,6 +1,5 @@
 import { treeSearchAlgorithm } from '/utils/tree-search-algorithm.js';
 import { sortMap } from '/utils/array-sort.js'
-//import { Server } from '/classes/server.js';
 
 
 /** @param {NS} ns **/
@@ -10,12 +9,15 @@ export async function main(ns) {
         ns.tprint("Name: " + server.hostname + ". Child: " + server.children + ". Parent: " + server.parent);
     }
     let sortedServerList = find(ns, serverList);
+    for (let server of sortedServerList) {
+        ns.tprint("Server scores: " + server);
+    }
 }
 
 /** 
  * @param  {NS} ns
  * @param  {Array<Object>} list 
- * @returns {String} string
+ * @returns {Map}
  */
 export function find(ns, list) {
     let map = new Map();
