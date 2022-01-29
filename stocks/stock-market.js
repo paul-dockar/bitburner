@@ -1,5 +1,5 @@
 import { Stocks } from '/classes/stocks.js'
-import { currencyAbrev } from '/helper/convert-money.js'
+import { currencyAbrev } from '/utils/convert-money.js'
 
 const BULL_MARKET = 0.6; //Default 0.6. A stock has a 60% chance of increasing in price
 const BEAR_MARKET = 0.5; //Default 0.5. A stock has a 50% chance of decreasing in price.

@@ -1,12 +1,14 @@
-import { treeSearchAlgorithm } from '/hack/tree-search-algorithm.js'
+import { treeSearchAlgorithm } from '/utils/tree-search-algorithm.js'
 import { find } from '/hack/find.js'
 import { prepareServer } from '/hack/prepare.js'
 
 /** @param {NS} ns **/
 export async function main(ns) {
     ns.tail();
-    //ns.disableLog("sleep");
-    //ns.disableLog("getServerMaxMoney");
+    ns.disableLog("disableLog");
+    ns.disableLog("sleep");
+    ns.disableLog("getServerMaxRam");
+    ns.disableLog("getServerUsedRam");
     if (!ns.fileExists("Formulas.exe")) {
         ns.tprint("Buy Formulas.exe to run this script");
         ns.exit;

@@ -1,10 +1,35 @@
 import { TreeNode } from '/classes/tree-node.js';
+import { treeSearchAlgorithm } from '/utils/tree-search-algorithm.js'
 
 /** @param {NS} ns **/
 export async function main(ns) {
+    let arg = ns.args[0];
+    ns.disableLog("disableLog");
+    ns.disableLog("sleep");
+    ns.disableLog("getServerMaxRam");
+    ns.disableLog("getServerUsedRam");
+
+    if (arg == null) {
+        ns.tprint("Please include argument; server.hostname or 'all'");
+        ns.exit;
+    }
+
     ns.tail();
-    let target = new TreeNode(ns.args[0]);
-    await prepareServer(ns, target);
+    let serverList = [];
+
+    if (arg == "all") {
+        serverList = treeSearchAlgorithm(ns);
+    } else {
+        let server = new TreeNode(arg);
+        serverList.push(server);
+    }
+
+    for (let server of serverList) {
+        let serverInfo = ns.getServer(server.hostname);
+        if (!serverInfo.purchasedByPlayer && !serverInfo.moneyMax == 0) {
+            await prepareServer(ns, server);
+        }
+    }
 }
 
 /**
@@ -16,9 +41,8 @@ export async function main(ns) {
 export async function prepareServer(ns, server) {
     const HOST = ns.getHostname();
     const CPU_CORES = getCpuCores(ns, HOST);
-    const HOME = "home";
-    const WEAKEN_SLAVE_SCRIPT = "/hack/slave/weaken.js";
-    const GROWTH_SLAVE_SCRIPT = "/hack/slave/grow.js";
+    const WEAKEN_SLAVE_SCRIPT = "/hack/worker/weaken.js";
+    const GROWTH_SLAVE_SCRIPT = "/hack/worker/grow.js";
     const MAX_RAM = ns.getServerMaxRam(HOST);
     const WEAKEN_RAM = ns.getScriptRam(WEAKEN_SLAVE_SCRIPT);
     const GROW_RAM = ns.getScriptRam(GROWTH_SLAVE_SCRIPT);

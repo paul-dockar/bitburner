@@ -1,4 +1,4 @@
-import { convertToInternationalCurrencySystem } from '/find-hack-target.js'
+import { convertToInternationalCurrencySystem } from '/old/find-hack-target.js'
 
 /** @param {NS} ns **/
 export async function main(ns) {

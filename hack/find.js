@@ -1,12 +1,15 @@
-import { treeSearchAlgorithm } from '/hack/tree-search-algorithm.js';
-import { sortMap } from '/helper/array-sort.js'
+import { treeSearchAlgorithm } from '/utils/tree-search-algorithm.js';
+import { sortMap } from '/utils/array-sort.js'
 //import { Server } from '/classes/server.js';
 
 
 /** @param {NS} ns **/
 export async function main(ns) {
     let serverList = treeSearchAlgorithm(ns);
-    let targetServer = find(ns, serverList);
+    for (let server of serverList) {
+        ns.tprint("Name: " + server.hostname + ". Child: " + server.children + ". Parent: " + server.parent);
+    }
+    let serverList = find(ns, serverList);
 }
 
 /** 
@@ -30,4 +33,5 @@ export function find(ns, list) {
     for (let x of sortedMap) {
         //ns.tprint(x);
     }
+    return sortedMap;
 }
