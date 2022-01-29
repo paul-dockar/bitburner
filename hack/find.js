@@ -9,7 +9,7 @@ export async function main(ns) {
     for (let server of serverList) {
         ns.tprint("Name: " + server.hostname + ". Child: " + server.children + ". Parent: " + server.parent);
     }
-    let serverList = find(ns, serverList);
+    let sortedServerList = find(ns, serverList);
 }
 
 /** 
