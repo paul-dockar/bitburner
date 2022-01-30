@@ -1,7 +1,7 @@
 import { TreeNode } from '/classes/tree-node.js'
 import { treeSearchAlgorithm } from '/utils/tree-search-algorithm.js'
 import { isRamAvailable, getCpuCores } from '/utils/server-info.js'
-import { weakenScriptPath, growthScriptPath } from '/hack/utils/file-locations.js'
+import { weakenScriptPath, growthScriptPath, hackScriptPath } from '/hack/utils/file-locations.js'
 
 /**
  * 
@@ -46,7 +46,6 @@ export async function weakenServer(ns, server, player, previousScriptTime, delay
 
     let pid = 0;
     if (isRamAvailable(weakenThreads, MAX_RAM, USED_RAM, WEAKEN_RAM)) {
-        ns.tprint("weakenThreads = " + weakenThreads + " target = " + server.hostname + " waitTime = " + waitTime);
         pid = ns.exec(weakenScriptPath, HOST, weakenThreads, server.hostname, waitTime);
     } else {
         await ns.sleep(1e4);
@@ -85,6 +84,28 @@ export async function growServer(ns, server, player, previousScriptTime, delayTi
     return [waitTime, securityIncrease, growthTime, pid];
 }
 
+export async function hackServer(ns, server, player, previousScriptTime, delayTime) {
+    const HOST = ns.getHostname();
+    const HACK_RAM = ns.getScriptRam(hackScriptPath);
+    const MAX_RAM = ns.getServerMaxRam(HOST);
+    const USED_RAM = ns.getServerUsedRam(HOST);
+
+    let [hackThreads, hackTime] = getHackInfo(ns, server, player);
+    let waitTime = Math.ceil(getWaitTime(previousScriptTime, hackTime, delayTime));
+
+    let securityIncrease = ns.hackAnalyzeSecurity(hackThreads);
+
+    let pid = 0;
+
+    if (isRamAvailable(hackThreads, MAX_RAM, USED_RAM, HACK_RAM)) {
+        pid = ns.exec(hackScriptPath, HOST, hackThreads, server.hostname, waitTime);
+    } else {
+        await ns.sleep(1e4);
+    }
+
+    return [waitTime, securityIncrease, hackTime, pid];
+}
+
 /**
  * 
  * @param {NS*} ns 
@@ -113,6 +134,19 @@ export function getGrowthInfo(ns, server, player, CPU_CORES) {
     let growthThreads = getGrowThreads(ns, server, player, CPU_CORES);
     let growthTime = Math.round(ns.formulas.hacking.growTime(server, player));
     return [growthThreads, growthTime];
+}
+
+/**
+ * 
+ * @param {NS} ns 
+ * @param {Server} server 
+ * @param {Player} player 
+ * @returns 
+ */
+export function getHackInfo(ns, server, player) {
+    let hackThreads = getHackThreads(ns, server, player);
+    let hackTime = Math.round(ns.formulas.hacking.hackTime(server, player));
+    return [hackThreads, hackTime];
 }
 
 /**
@@ -157,6 +191,26 @@ export function getGrowThreads(ns, server, player, cores) {
     return growthThreads;
 }
 
+
+/**
+ * 
+ * @param {NS} ns 
+ * @param {Server} server 
+ * @param {Player} player 
+ * @returns 
+ */
+export function getHackThreads(ns, server, player) {
+    let hackThreads = 0;
+    let hackTotalPercent;
+    let hackPercent = ns.formulas.hacking.hackPercent(server, player);
+    do {
+        hackThreads += 1;
+        hackTotalPercent = hackThreads * (hackPercent * 100);
+    } while (hackTotalPercent < 100);
+
+    return hackThreads;
+}
+
 /**
  * @description Returns negligible wait time if a < b, otherwise returns the difference. 
  * @param {number} a 
@@ -172,5 +226,5 @@ export function getWaitTime(a, b, c) {
     } else {
         waitTime = a - b;
     }
-    return waitTime + 20;
+    return waitTime + Math.floor(Math.random() * 20);
 }
