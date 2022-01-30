@@ -1,5 +1,6 @@
 import { treeSearchAlgorithm } from '/utils/tree-search-algorithm.js';
 import { sortMap } from '/utils/array-sort.js'
+import { currencyAbrev } from '/utils/convert-money.js'
 
 
 /** @param {NS} ns **/
@@ -9,9 +10,26 @@ export async function main(ns) {
         ns.tprint("Name: " + server.hostname + ". Child: " + server.children + ". Parent: " + server.parent);
     }
     let sortedServerList = find(ns, serverList);
-    for (let server of sortedServerList) {
-        ns.tprint("Server scores: " + server);
+    sortedServerList.forEach(logMapElements);
+
+    function logMapElements(value, key, map) {
+        let maxMoney = currencyAbrev(ns.getServerMaxMoney(key));
+        ns.tprint(`[${key}] = scoreOf ${value}. maxMoney = ${maxMoney}`);
     }
+
+    // todo: make pretty table in the future. need a server object first though.
+    // const row = '%-20s | %8s | %12s | %12s';
+    // ns.tprintf(row, 'HOSTNAME', 'HACK LVL', 'MAX $$', 'CASH $$');
+    // ns.tprintf(row, '---------', '-------', '------', '-------');
+    // for (const target of potentialTargets) {
+    //     ns.tprintf(row, target.hostname,
+    //         ns.nFormat(target.requiredHackingLevel,	'0,0'),
+    //         ns.nFormat(target.maxMoney,'($ 0.00 a)'),
+    //         ns.nFormat(target.MoneyAvailable,'($ 0.00 a)')
+    //         );
+    // }
+
+
 }
 
 /** 
@@ -31,9 +49,6 @@ export function find(ns, list) {
 
         map.set(node.hostname, score);
     }
-    let sortedMap = sortMap(map);
-    for (let x of sortedMap) {
-        //ns.tprint(x);
-    }
-    return sortedMap;
+
+    return sortMap(map);
 }

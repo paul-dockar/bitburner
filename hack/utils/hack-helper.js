@@ -34,23 +34,25 @@ export function getServersFromParams(ns) {
  * @param {number} previousScriptTime 
  * @returns 
  */
-export async function weakenServer(ns, server, player, previousScriptTime) {
+export async function weakenServer(ns, server, player, previousScriptTime, delayTime, securityIncrease) {
     const HOST = ns.getHostname();
     const WEAKEN_RAM = ns.getScriptRam(weakenScriptPath);
     const MAX_RAM = ns.getServerMaxRam(HOST);
     const USED_RAM = ns.getServerUsedRam(HOST);
 
-    let [weakenThreads, weakenTime] = getWeakenInfo(ns, server, player);
-    let waitTime = Math.ceil(getWaitTime(previousScriptTime, weakenTime));
+    let [weakenThreads, weakenTime] = getWeakenInfo(ns, server, player, securityIncrease);
+
+    let waitTime = Math.ceil(getWaitTime(previousScriptTime, weakenTime, delayTime));
 
     let pid = 0;
     if (isRamAvailable(weakenThreads, MAX_RAM, USED_RAM, WEAKEN_RAM)) {
+        ns.tprint("weakenThreads = " + weakenThreads + " target = " + server.hostname + " waitTime = " + waitTime);
         pid = ns.exec(weakenScriptPath, HOST, weakenThreads, server.hostname, waitTime);
     } else {
         await ns.sleep(1e4);
     }
 
-    return [weakenTime, pid];
+    return [waitTime, weakenTime, pid];
 }
 
 /**
@@ -61,7 +63,7 @@ export async function weakenServer(ns, server, player, previousScriptTime) {
  * @param {number} previousScriptTime 
  * @returns 
  */
-export async function growServer(ns, server, player, previousScriptTime) {
+export async function growServer(ns, server, player, previousScriptTime, delayTime) {
     const HOST = ns.getHostname();
     const CPU_CORES = getCpuCores(ns, HOST);
     const GROW_RAM = ns.getScriptRam(growthScriptPath);
@@ -70,7 +72,8 @@ export async function growServer(ns, server, player, previousScriptTime) {
 
     let [growthThreads, growthTime] = getGrowthInfo(ns, server, player, CPU_CORES);
 
-    let waitTime = Math.ceil(getWaitTime(previousScriptTime, growthTime));
+    let waitTime = Math.ceil(getWaitTime(previousScriptTime, growthTime, delayTime));
+    let securityIncrease = ns.growthAnalyzeSecurity(growthThreads);
 
     let pid = 0;
     if (isRamAvailable(growthThreads, MAX_RAM, USED_RAM, GROW_RAM)) {
@@ -79,7 +82,7 @@ export async function growServer(ns, server, player, previousScriptTime) {
         await ns.sleep(1e4);
     }
 
-    return [growthTime, pid];
+    return [waitTime, securityIncrease, growthTime, pid];
 }
 
 /**
@@ -90,10 +93,10 @@ export async function growServer(ns, server, player, previousScriptTime) {
  * @param {Player} player 
  * @returns {array}
  */
-export function getWeakenInfo(ns, server, player) {
+export function getWeakenInfo(ns, server, player, securityIncrease) {
     const CPU_CORES = getCpuCores(ns);
 
-    let weakenThreads = getWeakenThreads(ns, server, CPU_CORES);
+    let weakenThreads = getWeakenThreads(ns, server, CPU_CORES, securityIncrease);
     let weakenTime = Math.round(ns.formulas.hacking.weakenTime(server, player));
     return [weakenThreads, weakenTime];
 }
@@ -112,19 +115,23 @@ export function getGrowthInfo(ns, server, player, CPU_CORES) {
     return [growthThreads, growthTime];
 }
 
-/** 
+/**
+ * 
  * @description 
- * @param  {NS} ns
- * @param  {Node} server
- * @param  {number} cores
- * @returns {number}
+ * @param {NS} ns
+ * @param {Node} server
+ * @param {number} cores
+ * @param {number} securityIncrease 
+ * @returns 
  */
-export function getWeakenThreads(ns, server, cores) {
+export function getWeakenThreads(ns, server, cores, securityIncrease) {
     let weakenThreads = 1;
-    let securityDifference;
+    let securityDifference = server.hackDifficulty - server.minDifficulty;
     let securityDecrease;
+
+    if (securityIncrease > 0) securityDifference = securityIncrease
+
     do {
-        securityDifference = server.hackDifficulty - server.minDifficulty
         securityDecrease = ns.weakenAnalyze(weakenThreads, cores);
         weakenThreads += 1;
     } while (securityDifference > securityDecrease);
@@ -156,9 +163,14 @@ export function getGrowThreads(ns, server, player, cores) {
  * @param {number} b 
  * @returns {number}
  */
-export function getWaitTime(a, b) {
+export function getWaitTime(a, b, c) {
     let waitTime;
-    if (a < b) waitTime = 1;
-    else waitTime = a - b;
+    if (b < c) {
+        waitTime = c - b;
+    } else if (a < b) {
+        waitTime = c;
+    } else {
+        waitTime = a - b;
+    }
     return waitTime + 20;
 }

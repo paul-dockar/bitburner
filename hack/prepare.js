@@ -22,7 +22,8 @@ export async function prepareServerList(ns, serverList) {
     for (let serverObject of serverList) {
         let server = ns.getServer(serverObject.hostname);
         if (!server.purchasedByPlayer && !server.moneyMax == 0) {
-            runningPids.push(await prepareServer(ns, server));
+            let pids = await prepareServer(ns, server);
+            pids.forEach(element => runningPids.push(element));
         }
     }
     return runningPids.filter(Number);
@@ -41,6 +42,11 @@ async function prepareServer(ns, server) {
 
     let prepared = false;
     let runningPids = [];
+    let isMinimumSecurity = false;
+    let isMaxmimumMoney = false;
+    let previousScriptTime = 0;
+    let delayTime = 0;
+    let securityIncrease = 0;
     while (!prepared) {
         server = ns.getServer(server.hostname);
 
@@ -49,28 +55,44 @@ async function prepareServer(ns, server) {
             continue;
         }
 
-        let isMinimumSecurity = server.hackDifficulty == server.minDifficulty;
-        let isMaxmimumMoney = server.moneyAvailable == server.moneyMax;
-        let previousScriptTime = 0;
+        isMinimumSecurity = server.hackDifficulty == server.minDifficulty;
+        isMaxmimumMoney = server.moneyAvailable == server.moneyMax;
+        previousScriptTime = 0;
+        securityIncrease = 0;
 
-        if (!isMinimumSecurity) {
-            let [weakenTime, pid] = await weakenServer(ns, server, player, previousScriptTime);
-            runningPids.push(pid);
-            previousScriptTime = weakenTime;
-            isMinimumSecurity = true;
-        }
+        await weaken();
+        await grow();
+        await weaken();
 
-        if (!isMaxmimumMoney) {
-            let [growthTime, pid] = await growServer(ns, server, player, previousScriptTime);
-            previousScriptTime = growthTime;
-            runningPids.push(pid);
-            isMaxmimumMoney = true;
-        }
         prepared = checkServer(isMinimumSecurity, isMaxmimumMoney, prepared);
         await ns.sleep(1);
     }
 
     return runningPids;
+
+    async function weaken() {
+        if (!isMinimumSecurity) {
+            let [waitTime, weakenTime, pid] = await weakenServer(ns, server, player, previousScriptTime, delayTime, securityIncrease);
+            runningPids.push(pid);
+            previousScriptTime = weakenTime;
+            delayTime = waitTime;
+            isMinimumSecurity = true;
+        }
+        return;
+    }
+
+    async function grow() {
+        if (!isMaxmimumMoney) {
+            let [waitTime, growSecurityIncrease, growthTime, pid] = await growServer(ns, server, player, delayTime, previousScriptTime);
+            securityIncrease = growSecurityIncrease;
+            previousScriptTime = growthTime;
+            delayTime = waitTime;
+            runningPids.push(pid);
+            isMaxmimumMoney = true;
+            isMinimumSecurity = false
+        }
+        return;
+    }
 }
 
 /**
