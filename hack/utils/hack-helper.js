@@ -31,10 +31,11 @@ export function getServersFromParams(ns) {
  * @param {NS} ns 
  * @param {Server} server 
  * @param {Player} player 
- * @param {number} previousScriptTime 
+ * @param {number} maxScriptTime 
+ * @param {number} securityIncrease 
  * @returns 
  */
-export async function weakenServer(ns, server, player, previousScriptTime, delayTime, securityIncrease) {
+export async function weakenServer(ns, server, player, maxScriptTime, securityIncrease) {
     const HOST = ns.getHostname();
     const WEAKEN_RAM = ns.getScriptRam(weakenScriptPath);
     const MAX_RAM = ns.getServerMaxRam(HOST);
@@ -42,16 +43,12 @@ export async function weakenServer(ns, server, player, previousScriptTime, delay
 
     let [weakenThreads, weakenTime] = getWeakenInfo(ns, server, player, securityIncrease);
 
-    let waitTime = Math.ceil(getWaitTime(previousScriptTime, weakenTime, delayTime));
+    let sleepTime = Math.ceil(getSleepTime(maxScriptTime, weakenTime));
 
     let pid = 0;
-    if (isRamAvailable(weakenThreads, MAX_RAM, USED_RAM, WEAKEN_RAM)) {
-        pid = ns.exec(weakenScriptPath, HOST, weakenThreads, server.hostname, waitTime);
-    } else {
-        await ns.sleep(1e4);
-    }
+    pid = ns.exec(weakenScriptPath, HOST, weakenThreads, server.hostname, sleepTime, Math.random(1 * 1e6));
 
-    return [waitTime, weakenTime, pid];
+    return [sleepTime, weakenTime, pid];
 }
 
 /**
@@ -59,10 +56,10 @@ export async function weakenServer(ns, server, player, previousScriptTime, delay
  * @param {NS} ns 
  * @param {Server} server 
  * @param {Player} player 
- * @param {number} previousScriptTime 
+ * @param {number} maxScriptTime 
  * @returns 
  */
-export async function growServer(ns, server, player, previousScriptTime, delayTime) {
+export async function growServer(ns, server, player, maxScriptTime) {
     const HOST = ns.getHostname();
     const CPU_CORES = getCpuCores(ns, HOST);
     const GROW_RAM = ns.getScriptRam(growthScriptPath);
@@ -71,39 +68,38 @@ export async function growServer(ns, server, player, previousScriptTime, delayTi
 
     let [growthThreads, growthTime] = getGrowthInfo(ns, server, player, CPU_CORES);
 
-    let waitTime = Math.ceil(getWaitTime(previousScriptTime, growthTime, delayTime));
+    let sleepTime = Math.ceil(getSleepTime(maxScriptTime, growthTime));
     let securityIncrease = ns.growthAnalyzeSecurity(growthThreads);
 
     let pid = 0;
-    if (isRamAvailable(growthThreads, MAX_RAM, USED_RAM, GROW_RAM)) {
-        pid = ns.exec(growthScriptPath, HOST, growthThreads, server.hostname, waitTime);
-    } else {
-        await ns.sleep(1e4);
-    }
+    pid = ns.exec(growthScriptPath, HOST, growthThreads, server.hostname, sleepTime, Math.random(1 * 1e6));
 
-    return [waitTime, securityIncrease, growthTime, pid];
+    return [sleepTime, securityIncrease, growthTime, pid];
 }
 
-export async function hackServer(ns, server, player, previousScriptTime, delayTime) {
+/**
+ * 
+ * @param {NS} ns 
+ * @param {Server} server 
+ * @param {Player} player 
+ * @param {number} maxScriptTime 
+ * @returns 
+ */
+export async function hackServer(ns, server, player, maxScriptTime) {
     const HOST = ns.getHostname();
     const HACK_RAM = ns.getScriptRam(hackScriptPath);
     const MAX_RAM = ns.getServerMaxRam(HOST);
     const USED_RAM = ns.getServerUsedRam(HOST);
 
     let [hackThreads, hackTime] = getHackInfo(ns, server, player);
-    let waitTime = Math.ceil(getWaitTime(previousScriptTime, hackTime, delayTime));
+    let sleepTime = Math.ceil(getSleepTime(maxScriptTime, hackTime));
 
     let securityIncrease = ns.hackAnalyzeSecurity(hackThreads);
 
     let pid = 0;
+    pid = ns.exec(hackScriptPath, HOST, hackThreads, server.hostname, sleepTime, Math.random(1 * 1e6));
 
-    if (isRamAvailable(hackThreads, MAX_RAM, USED_RAM, HACK_RAM)) {
-        pid = ns.exec(hackScriptPath, HOST, hackThreads, server.hostname, waitTime);
-    } else {
-        await ns.sleep(1e4);
-    }
-
-    return [waitTime, securityIncrease, hackTime, pid];
+    return [sleepTime, securityIncrease, hackTime, pid];
 }
 
 /**
@@ -191,7 +187,6 @@ export function getGrowThreads(ns, server, player, cores) {
     return growthThreads;
 }
 
-
 /**
  * 
  * @param {NS} ns 
@@ -227,4 +222,11 @@ export function getWaitTime(a, b, c) {
         waitTime = a - b;
     }
     return waitTime + Math.floor(Math.random() * 20);
+}
+
+export function getSleepTime(maxScriptTime, scriptTime) {
+    const paddingTime = 20;
+    let sleep = (maxScriptTime + paddingTime) - scriptTime;
+
+    return sleep;
 }

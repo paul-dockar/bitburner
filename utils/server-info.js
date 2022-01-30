@@ -5,8 +5,8 @@
  * @param {number} usedRam 
  * @returns {boolean}
  */
-export function isRamAvailable(threads, maxRam, usedRam, scriptRam) {
-    return threads * scriptRam < maxRam - usedRam;
+export function isRamAvailable(maxRam, usedRam, scriptRam) {
+    return scriptRam < maxRam - usedRam;
 }
 
 /** 

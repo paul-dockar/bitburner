@@ -5,5 +5,5 @@ export async function main(ns) {
     await ns.sleep(waitTime);
     let money = await ns.hack(target);
 
-    await ns.tprint("money stolen: " + money);
+    await ns.tprint("HACK money stolen: " + money);
 }
