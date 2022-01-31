@@ -1,9 +1,7 @@
-import { disableLogs } from '/utils/scripts.js'
-import { weakenServer, growServer, hackServer } from '/hack/utils/hack-helper.js'
-import { weakenScriptPath, growthScriptPath, hackScriptPath } from '/hack/utils/file-locations.js'
-import { getGrowThreads, getWeakenThreads, getHackThreads } from '/hack/utils/hack-helper';
-import { isRamAvailable, getCpuCores } from '/utils/server-info.js'
-import { Batch, Hack, Grow, Weaken } from '/classes/batch';
+import { disableLogs } from '/utils/scripts.js';
+import { getMaxTimeFromBatch, getMaxRamFromBatch, isRamAvailable } from '/hack/utils/hack-helper.js';
+import { Hack, Grow, Weaken } from '/classes/batch.js';
+import { getCpuCores } from '/utils/server-info.js';
 
 /** @param {NS} ns **/
 export async function main(ns) {
@@ -18,124 +16,55 @@ export async function main(ns) {
     const MAX_RAM = ns.getServerMaxRam(HOST);
     const TARGET = ns.args[0];
 
-    let runningPids = [];
-    let maxScriptTime = 0;
-
-
     while (true) {
         const USED_RAM = ns.getServerUsedRam(HOST);
         const CPU_CORES = getCpuCores(ns, HOST);
         let player = ns.getPlayer();
         let server = ns.getServer(TARGET);
-        let securityIncrease = 0;
 
         let hack = new Hack(ns, server, player);
-        let weaken = new Weaken(ns, server, player);
+        let weaken0 = new Weaken(ns, server, player);
         let grow = new Grow(ns, server, player, CPU_CORES);
+        let weaken1 = new Weaken(ns, server, player);
 
         //ns.tprint(JSON.stringify(grow));
-        ns.tprint("hackThreads = " + hack.setHackThreads());
-        ns.tprint("weakenThreads = " + weaken.setWeakenThreads());
-        ns.tprint("growthreads = " + grow.setGrowThreads());
+        hack.setHackThreads();
+        weaken0.setSecurityDifference(ns.hackAnalyzeSecurity(hack.threads));
+        weaken0.setWeakenThreads();
+        grow.setGrowThreads();
+        weaken1.setSecurityDifference(ns.growthAnalyzeSecurity(grow.threads));
+        weaken1.setWeakenThreads();
 
-        ns.tprint("hackTime = " + hack.getHackTime());
-        ns.tprint("weakenTime = " + weaken.getWeakenTime());
-        ns.tprint("growTime = " + grow.getGrowTime());
+        hack.setHackTime();
+        weaken0.setWeakenTime();
+        grow.setGrowTime();
+        weaken1.setWeakenTime();
 
-        await ns.sleep(4000);
+        let maxScriptTime = getMaxTimeFromBatch(hack, weaken0, grow, weaken1);
+        hack.setSleepTime(maxScriptTime);
+        weaken0.setSleepTime(maxScriptTime);
+        grow.setSleepTime(maxScriptTime);
+        weaken1.setSleepTime(maxScriptTime);
 
-
-        maxScriptTime = getMaxTimeFromBatch(server, player) + 20;
-        let paddingTime = 100;
-
-        let totalBatchRam = getMaxRamFromBatch(ns, hack, weaken, grow);
+        let totalBatchRam = getMaxRamFromBatch(hack, weaken0, grow, weaken1);
         if (isRamAvailable(MAX_RAM, USED_RAM, totalBatchRam)) {
+            let delay = 100;
 
-            // await hack(maxScriptTime);
-            // await ns.sleep(paddingTime);
+            await ns.run(hack.filePath, hack.threads, server.hostname, hack.sleepTime, Math.random(1 * 1e6));
+            await ns.sleep(delay);
 
-            // await weaken(maxScriptTime);
-            // await ns.sleep(paddingTime);
+            await ns.run(weaken0.filePath, weaken0.threads, server.hostname, weaken0.sleepTime, Math.random(1 * 1e6));
+            await ns.sleep(delay);
 
-            // await grow(maxScriptTime);
-            // await ns.sleep(paddingTime);
+            await ns.run(grow.filePath, grow.threads, server.hostname, grow.sleepTime, Math.random(1 * 1e6));
+            await ns.sleep(delay);
 
-            // await weaken(maxScriptTime);
-            // await ns.sleep(paddingTime);
+            await ns.run(weaken1.filePath, weaken1.threads, server.hostname, weaken1.sleepTime, Math.random(1 * 1e6));
+            await ns.sleep(delay);
+
         } else {
             await ns.sleep(1e4);
             continue;
         }
     }
-
-    //replace this
-    function getMaxTimeFromBatch(server, player) {
-        let times = []
-        times.push(ns.formulas.hacking.weakenTime(server, player));
-        times.push(ns.formulas.hacking.growTime(server, player));
-        times.push(ns.formulas.hacking.hackTime(server, player));
-
-        return Math.max(...times);
-    }
-
-    async function weaken(maxTime) {
-        server = ns.getServer(target);
-        await weakenServer(ns, server, player, maxTime, securityIncrease);
-
-        return;
-    }
-
-    async function grow(maxTime) {
-        server = ns.getServer(target);
-        securityIncrease = await growServer(ns, server, player, maxTime);
-
-        return;
-    }
-
-    async function hack(maxTime) {
-        server = ns.getServer(target);
-        securityIncrease = await hackServer(ns, server, player, maxTime);
-
-        return;
-    }
-}
-
-export let getSecurityIncrease = () => {
-
-}
-
-
-
-
-
-
-
-
-
-
-
-function getThreadsForBatch(ns, server, player, cpuCores) {
-    let hackThreads = getHackThreads(ns, server, player);
-    let securityIncrease = ns.hackAnalyzeSecurity(hackThreads);
-    let weakenThreads = getWeakenThreads(ns, server, player, securityIncrease);
-    let growThreads = getGrowThreads(ns, server, player, cpuCores);
-}
-
-
-function getMaxRamFromBatch(ns, hack, weaken, grow) {
-    let maxram = 0;
-    maxram += (hack.threads * hack.ram);
-    ns.tprint("maxram for batch is = " + maxram);
-
-    let weakenThreadsEstimate = weaken.getWeakenThreads(ns.hackAnalyzeSecurity(hack.threads));
-    maxram += (weakenThreadsEstimate * weaken.ram);
-    ns.tprint("maxram for batch is = " + maxram);
-    maxram += (grow.threads * weaken.ram);
-    ns.tprint("maxram for batch is = " + maxram);
-
-    weakenThreadsEstimate = weaken.getWeakenThreads(ns.hackAnalyzeSecurity(hack.threads));
-    maxram += (weakenThreadsEstimate * weaken.ram);
-    ns.tprint("maxram for batch is = " + maxram);
-
-    return maxram;
 }

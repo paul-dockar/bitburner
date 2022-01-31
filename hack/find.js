@@ -14,7 +14,9 @@ export async function main(ns) {
 
     function logMapElements(value, key, map) {
         let maxMoney = currencyAbrev(ns.getServerMaxMoney(key));
-        ns.tprint(`[${key}] = scoreOf ${value}. maxMoney = ${maxMoney}`);
+        let server = ns.getServer(key);
+
+        ns.tprint(`[${key}] = scoreOf ${value}. maxMoney = ${maxMoney}. availMoney = ${currencyAbrev(server.moneyAvailable)}. currentSecurity = ${server.hackDifficulty}. minSecurity = ${server.minDifficulty}`);
     }
 
     // todo: make pretty table in the future. need a server object first though.

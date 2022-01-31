@@ -8,14 +8,14 @@ export class Batch {
         this.cores = cores;
         this.threads = 1;
         this.sleepTime = 0;
+        this.scriptTime = 1;
         this.ram = 1;
     }
 
-    setSleepTime(maxScriptTime, scriptTime) {
-        const paddingTime = 100;
-        this.sleepTime = (maxScriptTime + paddingTime) - scriptTime;
-
-        return sleepTime;
+    setSleepTime(maxScriptTime) {
+        const paddingTime = 200;
+        this.sleepTime = (maxScriptTime + paddingTime) - this.scriptTime;
+        return;
     }
 }
 
@@ -37,12 +37,12 @@ export class Hack extends Batch {
             } while (hackTotalPercent < 100);
 
             this.threads = threads;
-
             return threads;
         }
 
-        this.getHackTime = () => {
-            return this.ns.formulas.hacking.hackTime(this.server, this.player)
+        this.setHackTime = () => {
+            this.scriptTime = this.ns.formulas.hacking.hackTime(this.server, this.player);
+            return;
         }
 
 
@@ -54,7 +54,7 @@ export class Weaken extends Batch {
         super(ns, server, player, cores);
         this.filePath = weakenScriptPath;
         this.ram = ns.getScriptRam(this.filePath)
-        this.securityDifference = this.server.hackDifficulty - this.server.minDifficulty;
+        this.securityDifference = 0;
 
         this.setWeakenThreads = () => {
             let securityDecrease;
@@ -65,16 +65,16 @@ export class Weaken extends Batch {
             } while (this.securityDifference > securityDecrease);
 
             this.threads = threads;
-
             return threads;
         }
 
-        this.getWeakenThreads = () => {
-
+        this.setSecurityDifference = (securityIncrease) => {
+            this.securityDifference = securityIncrease;
         }
 
-        this.getWeakenTime = () => {
-            return this.ns.formulas.hacking.weakenTime(this.server, this.player)
+        this.setWeakenTime = () => {
+            this.scriptTime = this.ns.formulas.hacking.weakenTime(this.server, this.player);
+            return;
         }
 
     }
@@ -103,12 +103,12 @@ export class Grow extends Batch {
             } while (estimatedGrowthMultiplier > growthPercent / 100);
 
             this.threads = threads;
-
             return threads;
         }
 
-        this.getGrowTime = () => {
-            return this.ns.formulas.hacking.growTime(this.server, this.player)
+        this.setGrowTime = () => {
+            this.scriptTime = this.ns.formulas.hacking.growTime(this.server, this.player);
+            return;
         }
 
 
