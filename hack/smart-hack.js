@@ -31,11 +31,12 @@ export async function main(ns) {
         ns.exit();
     }
 
-    let minimumHackTime = ns.formulas.hacking.hackTime(server, player);
-    let minimumWeakenTime = ns.formulas.hacking.weakenTime(server, player);
-    let minimumGrowTime = ns.formulas.hacking.growTime(server, player);
+    // let minimumHackTime = ns.formulas.hacking.hackTime(server, player);
+    // let minimumWeakenTime = ns.formulas.hacking.weakenTime(server, player);
+    // let minimumGrowTime = ns.formulas.hacking.growTime(server, player);
 
     let i = 0;
+    let allRunningBatchFinishTimes = [];
     while (true) {
         server = ns.getServer(ns.args[0]);
         player = ns.getPlayer();
@@ -67,27 +68,50 @@ export async function main(ns) {
         grow.setSleepTime(maxScriptTime, TIME_DELAY_BETWEEN_WORKERS * 3);
         weaken1.setSleepTime(maxScriptTime, TIME_DELAY_BETWEEN_WORKERS * 4);
 
+        let currentTime = Date.now();
+        // ns.tprint("currentTime = " + currentTime);
+        hack.setExecTime(currentTime);
+        weaken0.setExecTime(currentTime);
+        grow.setExecTime(currentTime);
+        weaken1.setExecTime(currentTime);
+
         let isSafeToStartBatch = () => {
-            //todo: add code to prevent starting a batch whilst an earlier batch is finishing
+            batchStartFinishTime = currentTime + hack.scriptTime + hack.sleepTime;
+            //batchFinishFinishTime = (currentTime + weaken1.scriptTime + weaken1.sleepTime);
+
+            if (allRunningBatchFinishTimes.length === 0) {
+                return true;
+            }
+
+            let safe = true;
+            for (let finishTime of allRunningBatchFinishTimes) {
+                if (currentTime > finishTime) {
+                    let index = allRunningBatchFinishTimes.indexOf(finishTime, 0);
+                    allRunningBatchFinishTimes.splice(index, 1);
+                }
+                //ns.tprint(`relative time = ${currentTime - finishTime} current = ${currentTime} finish = ${finishTime}`);
+                if (hack.executionTime > finishTime) safe = false;
+                if (weaken0.executionTime > finishTime) safe = false;
+                if (grow.executionTime > finishTime) safe = false;
+                if (weaken1.executionTime > finishTime) safe = false;
 
 
-            return;
-            // let hackTimeCheck = hack.scriptTime <= minimumHackTime;
-            // let weaken0TimeCheck = weaken0.scriptTime <= minimumWeakenTime;
-            // let growTimeCheck = grow.scriptTime <= minimumGrowTime;
-            // let weaken1TimeCheck = weaken1.scriptTime <= minimumWeakenTime;
-
-            // return hackTimeCheck && weaken0TimeCheck && growTimeCheck && weaken1TimeCheck;
+            }
+            return safe;
         }
 
+        let batchStartFinishTime;
         if (isSafeToStartBatch()) {
             //Calculate the total ram required to run the batch, delay if ram is not enough and try again.
             const USED_RAM = ns.getServerUsedRam(HOST);
             let totalBatchRam = getSumRamFromBatch(hack, weaken0, grow, weaken1);
             if (isRamAvailable(MAX_RAM, USED_RAM, totalBatchRam)) {
-                const row = '%6s | %-26s | %-26s | %6s | %8s | %12s | %16s | %16s | %16s | %10s';
-                ns.tprintf(row, '------', '------', '------', '------', '------', '------', '------', '------', '------', '------');
-                ns.tprintf(row, 'name', 'startTime', 'finishTime', 'lag', 'waitTime', 'money hacked', 'estScriptTime', 'actualScriptTime', 'maxScriptTime', 'order');
+                // const row = '%6s | %-26s | %-26s | %6s | %8s | %12s | %16s | %16s | %16s | %10s';
+                // ns.tprintf(row, '------', '------', '------', '------', '------', '------', '------', '------', '------', '------');
+                // ns.tprintf(row, 'name', 'startTime', 'finishTime', 'lag', 'waitTime', 'money hacked', 'estScriptTime', 'actualScriptTime', 'maxScriptTime', 'order');
+
+                allRunningBatchFinishTimes.push(batchStartFinishTime);
+
                 await ns.run(hack.filePath, hack.threads, server.hostname, hack.sleepTime, hack.scriptTime, maxScriptTime, i, Math.random(1 * 1e6));
                 i++;
 
@@ -106,8 +130,8 @@ export async function main(ns) {
                 continue;
             }
         } else {
-            ns.print("batch safety protection enabled, sleep a little. This shouldnt occur unless timings are too tight + lag");
-            await ns.sleep(TIME_DELAY_BETWEEN_BATCHES * 20);
+            ns.print("LOG: " + Date.now() + " a batch is attempting to start whilst an earlier is finishing.  Sleep 1s");
+            await ns.sleep(1000);
             continue;
         }
         await ns.sleep(TIME_DELAY_BETWEEN_BATCHES);

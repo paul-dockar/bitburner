@@ -9,6 +9,7 @@ export class Batch {
         this.threads = 1;
         this.sleepTime = 0;
         this.scriptTime = 1;
+        this.executionTime = 1;
         this.ram = 1;
     }
 
@@ -20,6 +21,10 @@ export class Batch {
     setSleepTime(maxScriptTime, paddingTime) {
         this.sleepTime = (paddingTime + maxScriptTime) - this.scriptTime;
         return;
+    }
+
+    setExecTime(currentTime) {
+        this.executionTime = this.sleepTime + currentTime;
     }
 }
 

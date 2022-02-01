@@ -2,8 +2,8 @@ import { TreeNode } from '/classes/tree-node.js';
 import { Batch } from '/classes/batch.js';
 import { treeSearchAlgorithm } from '/utils/tree-search-algorithm.js';
 
-export const TIME_DELAY_BETWEEN_WORKERS = 200;
-export const TIME_DELAY_BETWEEN_BATCHES = TIME_DELAY_BETWEEN_WORKERS * 8;
+export const TIME_DELAY_BETWEEN_WORKERS = 40;
+export const TIME_DELAY_BETWEEN_BATCHES = TIME_DELAY_BETWEEN_WORKERS * 6;
 
 /**
  * @description If script arguments include "all" then get all servers in the world, else just the single server argument.
