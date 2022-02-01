@@ -1,8 +1,12 @@
-import { TreeNode } from '/classes/tree-node.js'
-import { treeSearchAlgorithm } from '/utils/tree-search-algorithm.js'
+import { TreeNode } from '/classes/tree-node.js';
+import { Batch } from '/classes/batch.js';
+import { treeSearchAlgorithm } from '/utils/tree-search-algorithm.js';
+
+export const TIME_DELAY_BETWEEN_WORKERS = 200;
+export const TIME_DELAY_BETWEEN_BATCHES = TIME_DELAY_BETWEEN_WORKERS * 8;
 
 /**
- * 
+ * @description If script arguments include "all" then get all servers in the world, else just the single server argument.
  * @param {NS} ns 
  * @returns {array}
  */
@@ -35,16 +39,32 @@ export function isRamAvailable(maxRam, usedRam, scriptRam) {
     return scriptRam < maxRam - usedRam;
 }
 
+/**
+ * @description collects 3-4 Batch Class objects and returns the max runtime
+ * @param {Batch} a 
+ * @param {Batch} b 
+ * @param {Batch} c 
+ * @param {Batch} opts 
+ * @returns 
+ */
 export function getMaxTimeFromBatch(a, b, c, opts) {
     let times = []
     times.push(a.scriptTime);
     times.push(b.scriptTime);
     times.push(c.scriptTime);
-    if (typeof opts != "undefined") times.push(opts.scriptTime)
+    if (typeof opts != "undefined") times.push(opts.scriptTime);
     return Math.ceil(Math.max(...times));
 }
 
-export function getMaxRamFromBatch(a, b, c, opts) {
+/**
+ * @description collects 3-4 Batch Class objects and returns the sum of all their ram used.
+ * @param {Batch} a 
+ * @param {Batch} b 
+ * @param {Batch} c 
+ * @param {Batch} opts 
+ * @returns 
+ */
+export function getSumRamFromBatch(a, b, c, opts) {
     let maxram = 0;
     maxram += (a.threads * a.ram);
     maxram += (b.threads * b.ram);

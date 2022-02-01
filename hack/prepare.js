@@ -1,7 +1,8 @@
 import { disableLogs } from '/utils/scripts.js';
-import { getMaxTimeFromBatch, getMaxRamFromBatch, isRamAvailable, getServersFromParams } from '/hack/utils/hack-helper.js';
+import { getMaxTimeFromBatch, getSumRamFromBatch, isRamAvailable, getServersFromParams } from '/hack/utils/hack-helper.js';
 import { Grow, Weaken } from '/classes/batch.js';
 import { getCpuCores } from '/utils/server-info.js';
+import { TIME_DELAY_BETWEEN_WORKERS } from '/hack/utils/hack-helper';
 
 /** @param {NS} ns **/
 export async function main(ns) {
@@ -53,7 +54,7 @@ async function prepareServer(ns, server) {
     let weaken1 = new Weaken(ns, server, player);
 
     //ns.tprint(JSON.stringify(grow));
-    weaken0.setSecurityDifference(server.hackDifficulty - server.minDifficulty);
+    weaken0.setSecurityDifference(server.hackDifficulty);
     weaken0.setWeakenThreads();
     grow.setGrowThreads();
     weaken1.setSecurityDifference(ns.growthAnalyzeSecurity(grow.threads));
@@ -64,23 +65,16 @@ async function prepareServer(ns, server) {
     weaken1.setWeakenTime();
 
     let maxScriptTime = getMaxTimeFromBatch(weaken0, grow, weaken1);
-    weaken0.setSleepTime(maxScriptTime);
-    grow.setSleepTime(maxScriptTime);
-    weaken1.setSleepTime(maxScriptTime);
+    weaken0.setSleepTime(maxScriptTime, TIME_DELAY_BETWEEN_WORKERS * 1);
+    grow.setSleepTime(maxScriptTime, TIME_DELAY_BETWEEN_WORKERS * 2);
+    weaken1.setSleepTime(maxScriptTime, TIME_DELAY_BETWEEN_WORKERS * 3);
 
-    let totalBatchRam = getMaxRamFromBatch(weaken0, grow, weaken1);
+    let totalBatchRam = getSumRamFromBatch(weaken0, grow, weaken1);
     if (isRamAvailable(MAX_RAM, USED_RAM, totalBatchRam)) {
-        let delay = 100;
-
         await ns.run(weaken0.filePath, weaken0.threads, server.hostname, weaken0.sleepTime, Math.random(1 * 1e6));
-        await ns.sleep(delay);
-
         await ns.run(grow.filePath, grow.threads, server.hostname, grow.sleepTime, Math.random(1 * 1e6));
-        await ns.sleep(delay);
-
         await ns.run(weaken1.filePath, weaken1.threads, server.hostname, weaken1.sleepTime, Math.random(1 * 1e6));
-        await ns.sleep(delay);
     }
-    await ns.sleep(1000);
+    await ns.sleep(TIME_DELAY_BETWEEN_WORKERS);
     return;
 }
