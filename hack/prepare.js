@@ -1,8 +1,7 @@
 import { disableLogs } from '/utils/scripts.js';
-import { getMaxTimeFromBatch, getSumRamFromBatch, isRamAvailable, getServersFromParams } from '/hack/utils/hack-helper.js';
+import { getMaxTimeFromBatch, getSumRamFromBatch, isRamAvailable, getServersFromParams, TIME_DELAY_BETWEEN_WORKERS } from '/hack/utils/hack-helper.js';
 import { Grow, Weaken } from '/classes/batch.js';
 import { getCpuCores } from '/utils/server-info.js';
-import { TIME_DELAY_BETWEEN_WORKERS } from '/hack/utils/hack-helper';
 
 /** @param {NS} ns **/
 export async function main(ns) {
@@ -21,7 +20,7 @@ export async function main(ns) {
 export async function prepareServerList(ns, serverList) {
     for (let serverObject of serverList) {
         let server = ns.getServer(serverObject.hostname);
-        if (!server.purchasedByPlayer && !server.moneyMax == 0) {
+        if (!server.purchasedByPlayer && server.moneyAvailable != server.moneyMax) {
             await prepareServer(ns, server);
         }
     }

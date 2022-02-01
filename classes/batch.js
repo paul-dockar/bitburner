@@ -1,6 +1,6 @@
 import { weakenScriptPath, growthScriptPath, hackScriptPath } from '/hack/utils/file-locations.js';
 
-export class Batch {
+export class Script {
     constructor(ns, server, player, cores) {
         this.ns = ns;
         this.server = server;
@@ -9,7 +9,7 @@ export class Batch {
         this.threads = 1;
         this.sleepTime = 0;
         this.scriptTime = 1;
-        this.executionTime = 1;
+        this.executionDateTime = 1;
         this.ram = 1;
     }
 
@@ -23,12 +23,12 @@ export class Batch {
         return;
     }
 
-    setExecTime(currentTime) {
-        this.executionTime = this.sleepTime + currentTime;
+    setExecDateTime(currentTime) {
+        this.executionDateTime = this.sleepTime + currentTime;
     }
 }
 
-export class Hack extends Batch {
+export class Hack extends Script {
     constructor(ns, server, player) {
         super(ns, server, player);
         this.filePath = hackScriptPath;
@@ -63,17 +63,13 @@ export class Hack extends Batch {
         }
     }
 
-    /**
-     * @description Calculates the time to hack the server;
-     * @returns 
-     */
     setHackTime() {
         this.scriptTime = this.ns.formulas.hacking.hackTime(this.server, this.player);
         return;
     }
 }
 
-export class Weaken extends Batch {
+export class Weaken extends Script {
     constructor(ns, server, player, cores) {
         super(ns, server, player, cores);
         this.filePath = weakenScriptPath;
@@ -82,7 +78,7 @@ export class Weaken extends Batch {
     }
 
     /**
-     * @description Calculates
+     * @description Calculates threads required to weaken the server back to minimum
      * @returns 
      */
     setWeakenThreads() {
@@ -97,6 +93,10 @@ export class Weaken extends Batch {
         return;
     }
 
+    /**
+     * 
+     * @param {number} securityIncrease 
+     */
     setSecurityDifference(securityIncrease) {
         this.securityDifference = securityIncrease;
     }
@@ -107,7 +107,7 @@ export class Weaken extends Batch {
     }
 }
 
-export class Grow extends Batch {
+export class Grow extends Script {
     constructor(ns, server, player, cores) {
         super(ns, server, player, cores);
         this.filePath = growthScriptPath;
@@ -115,7 +115,7 @@ export class Grow extends Batch {
     }
 
     /**
-     * 
+     * @description - Calculates grow threads required to grow a server from $0 to max $
      * @returns 
      */
     setGrowThreads() {

@@ -1,8 +1,7 @@
 import { TreeNode } from '/classes/tree-node.js';
-import { Batch } from '/classes/batch.js';
 import { treeSearchAlgorithm } from '/utils/tree-search-algorithm.js';
 
-export const TIME_DELAY_BETWEEN_WORKERS = 40;
+export const TIME_DELAY_BETWEEN_WORKERS = 60;
 export const TIME_DELAY_BETWEEN_BATCHES = TIME_DELAY_BETWEEN_WORKERS * 6;
 
 /**
@@ -41,10 +40,10 @@ export function isRamAvailable(maxRam, usedRam, scriptRam) {
 
 /**
  * @description collects 3-4 Batch Class objects and returns the max runtime
- * @param {Batch} a 
- * @param {Batch} b 
- * @param {Batch} c 
- * @param {Batch} opts 
+ * @param {Script} a 
+ * @param {Script} b 
+ * @param {Script} c 
+ * @param {Script} opts 
  * @returns 
  */
 export function getMaxTimeFromBatch(a, b, c, opts) {
@@ -58,10 +57,10 @@ export function getMaxTimeFromBatch(a, b, c, opts) {
 
 /**
  * @description collects 3-4 Batch Class objects and returns the sum of all their ram used.
- * @param {Batch} a 
- * @param {Batch} b 
- * @param {Batch} c 
- * @param {Batch} opts 
+ * @param {Script} a 
+ * @param {Script} b 
+ * @param {Script} c 
+ * @param {Script} opts 
  * @returns 
  */
 export function getSumRamFromBatch(a, b, c, opts) {
