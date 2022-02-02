@@ -14,3 +14,16 @@ export function sortMap(m) {
 
     return new Map(a);
 }
+
+/**
+ * 
+ * @param {Map} m 
+ * @returns {Array}
+ */
+export function mapToArray(m) {
+    let a = []
+    for (let x of m)
+        a.push(x[0]);
+
+    return a;
+}

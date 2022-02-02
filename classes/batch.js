@@ -131,10 +131,6 @@ export class Grow extends Script {
         return;
     }
 
-    /**
-     * 
-     * @returns 
-     */
     setGrowTime() {
         this.scriptTime = this.ns.formulas.hacking.growTime(this.server, this.player);
         return;

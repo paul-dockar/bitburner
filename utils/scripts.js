@@ -3,5 +3,4 @@ export function disableLogs(ns) {
     ns.disableLog("sleep");
     ns.disableLog("getServerMaxRam");
     ns.disableLog("getServerUsedRam");
-    ns.tail();
 }

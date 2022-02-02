@@ -1,37 +1,80 @@
 import { treeSearchAlgorithm } from '/utils/tree-search-algorithm.js';
 import { sortMap } from '/utils/array-sort.js'
-import { currencyAbrev } from '/utils/convert-money.js'
-
 
 /** @param {NS} ns **/
 export async function main(ns) {
     let serverList = treeSearchAlgorithm(ns);
-    for (let server of serverList) {
-        ns.tprint("Name: " + server.hostname + ". Child: " + server.children + ". Parent: " + server.parent);
+    let player = ns.getPlayer();
+
+    let levelSortedServerList = sortByLevel(ns, serverList);
+    printServers(ns, levelSortedServerList);
+
+    const runningServers = ['blade', 'ecorp', 'megacorp'];
+    findNextServer(ns, serverList, runningServers);
+}
+
+/**
+ * 
+ * @param {NS} ns 
+ * @param {Map} levelSortedServerList 
+ */
+function printServers(ns, levelSortedServerList) {
+    let checkPorts = (so) => {
+        let count = 0;
+        if (so.ftpPortOpen) count++;
+        if (so.httpPortOpen) count++;
+        if (so.smtpPortOpen) count++;
+        if (so.sqlPortOpen) count++;
+        if (so.sshPortOpen) count++;
+        return count;
+    };
+
+    ns.tprint("\r\n\r\n\r\n \/$$$$$$$$ \/$$$$$$ \/$$   \/$$ \/$$$$$$$ \r\n| $$_____\/|_  $$_\/| $$$ | $$| $$__  $$\r\n| $$        | $$  | $$$$| $$| $$  \\ $$\r\n| $$$$$     | $$  | $$ $$ $$| $$  | $$\r\n| $$__\/     | $$  | $$  $$$$| $$  | $$\r\n| $$        | $$  | $$\\  $$$| $$  | $$\r\n| $$       \/$$$$$$| $$ \\  $$| $$$$$$$\/\r\n|__\/      |______\/|__\/  \\__\/|_______\/ ");
+    const row = '| %-24s | %-5s | %-5s | %-10s | %-6s | %-6s | %-6s | %-9s | %-9s | %7s |';
+    ns.tprintf(row, "------------------------", "-----", "-----", "-------", "------", "------", "------", "---------", "---------", "-------");
+    ns.tprintf(row, "hostname", "level", "hack%", "$", "minSec", "growth", "rooted", "backdoord", "openPorts", "score");
+    ns.tprintf(row, "------------------------", "-----", "-----", "----------", "------", "------", "------", "---------", "---------", "-------");
+    for (let server of levelSortedServerList) {
+        let so = ns.getServer(server[0]);
+        let hostname = so.hostname;
+        let level = so.requiredHackingSkill;
+        let money = so.moneyMax;
+        let minSec = so.minDifficulty;
+        let isRooted = so.hasAdminRights;
+        let isBackdoor = so.backdoorInstalled;
+        let openPorts = checkPorts(so);
+        let isPlayerOwned = so.purchasedByPlayer;
+        let serverGrowth = so.serverGrowth;
+
+        let { hackPerc, score } = calculateScore(ns, so, money, minSec);
+
+        if (!isPlayerOwned) {
+            ns.tprintf(row, hostname, level, ns.nFormat(hackPerc, '0%'), ns.nFormat(money, '($ 0.00 a)'), minSec, serverGrowth, isRooted, isBackdoor, openPorts, ns.nFormat(score, '0.0a'));
+        }
     }
-    let sortedServerList = find(ns, serverList);
-    sortedServerList.forEach(logMapElements);
+}
 
-    function logMapElements(value, key, map) {
-        let maxMoney = currencyAbrev(ns.getServerMaxMoney(key));
-        let server = ns.getServer(key);
-
-        ns.tprint(`[${key}] = scoreOf ${value}. maxMoney = ${maxMoney}. availMoney = ${currencyAbrev(server.moneyAvailable)}. currentSecurity = ${server.hackDifficulty}. minSecurity = ${server.minDifficulty}`);
+/**
+ * 
+ * @param {NS} ns 
+ * @param {Server} so 
+ * @param {number} money 
+ * @param {number} minSec 
+ * @returns 
+ */
+function calculateScore(ns, so, money, minSec) {
+    let player = ns.getPlayer();
+    let score;
+    let hackPerc;
+    if (ns.fileExists("Formulas.exe")) {
+        let weakenTime = ns.formulas.hacking.weakenTime(so, player);
+        hackPerc = ns.formulas.hacking.hackChance(so, player);
+        score = Math.round(money * hackPerc * so.serverGrowth / weakenTime);
+    } else {
+        hackPerc = ns.hackAnalyzeChance(so.hostname);
+        score = Math.round((money * hackPerc) / 1 / minSec);
     }
-
-    // todo: make pretty table in the future. need a server object first though.
-    // const row = '%-20s | %8s | %12s | %12s';
-    // ns.tprintf(row, 'HOSTNAME', 'HACK LVL', 'MAX $$', 'CASH $$');
-    // ns.tprintf(row, '---------', '-------', '------', '-------');
-    // for (const target of potentialTargets) {
-    //     ns.tprintf(row, target.hostname,
-    //         ns.nFormat(target.requiredHackingLevel,	'0,0'),
-    //         ns.nFormat(target.maxMoney,'($ 0.00 a)'),
-    //         ns.nFormat(target.MoneyAvailable,'($ 0.00 a)')
-    //         );
-    // }
-
-
+    return { hackPerc, score };
 }
 
 /** 
@@ -39,18 +82,58 @@ export async function main(ns) {
  * @param  {Array<Object>} list 
  * @returns {Map}
  */
-export function find(ns, list) {
+export function sortByLevel(ns, list) {
     let map = new Map();
     for (let node of list) {
-        let player = ns.getPlayer();
-        let server = ns.getServer();
-        let hackAnalyzeChance = ns.hackAnalyzeChance(node.hostname);
-        let maxMoney = ns.getServerMaxMoney(node.hostname);
-        let weakenTime = ns.getWeakenTime(node.hostname);
-        let score = Math.round((maxMoney * hackAnalyzeChance) / weakenTime);
+        let so = ns.getServer(node.hostname);
+        let level = so.requiredHackingSkill;
+
+        map.set(node.hostname, level);
+    }
+
+    return sortMap(map);
+}
+
+/** 
+ * @param  {NS} ns
+ * @param  {Array<Object>} list 
+ * @returns {Map}
+ */
+export function sortByScore(ns, list) {
+    let map = new Map();
+    for (let node of list) {
+        let so = ns.getServer(node.hostname);
+        let money = so.moneyMax;
+        let minSec = so.minDifficulty;
+        let { hackPerc, score } = calculateScore(ns, so, money, minSec);
 
         map.set(node.hostname, score);
     }
 
     return sortMap(map);
+}
+
+/**
+ * 
+ * @param {NS} ns 
+ * @param {Map} serverList 
+ * @param {Array} runningServers
+ * @returns {string} next server hostname
+ */
+export function findNextServer(ns, serverList, runningServers) {
+    let scoreSortedServerMap = sortByScore(ns, serverList);
+
+    for (let allServers of scoreSortedServerMap) {
+        for (let runningServer of runningServers) {
+            if (runningServer === allServers[0]) {
+                let removed = scoreSortedServerMap.delete(allServers[0]);
+                ns.tprint(removed);
+            }
+
+        }
+    }
+
+    //printServers(ns, scoreSortedServerMap);
+
+    return Array.from(scoreSortedServerMap.keys()).pop();;
 }

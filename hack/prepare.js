@@ -43,16 +43,15 @@ async function prepareServer(ns, server) {
 
     const HOST = ns.getHostname();
     const MAX_RAM = ns.getServerMaxRam(HOST);
-
     const USED_RAM = ns.getServerUsedRam(HOST);
     const CPU_CORES = getCpuCores(ns, HOST);
+
     let player = ns.getPlayer();
 
     let weaken0 = new Weaken(ns, server, player);
     let grow = new Grow(ns, server, player, CPU_CORES);
     let weaken1 = new Weaken(ns, server, player);
 
-    //ns.tprint(JSON.stringify(grow));
     weaken0.setSecurityDifference(server.hackDifficulty);
     weaken0.setWeakenThreads();
     grow.setGrowThreads();
