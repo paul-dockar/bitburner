@@ -4,11 +4,11 @@ import { convertToInternationalCurrencySystem } from '/old/find-hack-target.js'
 export async function main(ns) {
     const ram = 1048576;
     const prefix = "pserv-1024tb-";
-    for (let i = 0; i < 12; ++i) {
+    for (let i = 0; i < 25; ++i) {
         let cost = ns.getPurchasedServerCost(ram);
         cost = convertToInternationalCurrencySystem(cost);
         ns.tprint("cost of server: " + cost);
-        let response = ns.purchaseServer(prefix + (i + 21), ram);
+        let response = ns.purchaseServer(prefix + (i), ram);
         ns.tprint("response: " + response);
     }
 }

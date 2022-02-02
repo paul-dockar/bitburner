@@ -7,7 +7,7 @@ export async function main(ns) {
     const maxHacknetCpu = 16;
     let player = new ns.getPlayer();
 
-    for (currentNodes; currentNodes < maxNodes; i++) {
+    for (currentNodes; currentNodes < maxNodes; currentNodes++) {
         if (ns.hacknet.getPurchaseNodeCost() < player.money) {
             let purchaseResponse = purchaseNode(ns, maxNodes);
             if (purchaseResponse == maxNodes) {
