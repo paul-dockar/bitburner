@@ -51,8 +51,6 @@ export async function main(ns) {
         let grow = new Grow(ns, server, player, CPU_CORES);
         let weaken1 = new Weaken(ns, server, player);
 
-        //TODO:
-        //Use Formula.exe if available, else calculate (inefficently) the script time and threads
         if (ns.fileExists("Formulas.exe")) {
             //Set the threads for each script in the batch
             hack.setHackThreads();
@@ -69,8 +67,18 @@ export async function main(ns) {
             grow.setGrowTime();
             weaken1.setWeakenTime();
         } else {
-            ns.tprint("buy formulas.exe idiot");
-            ns.exit();
+            //If formulas.exe is not purchased, use inefficient method to calculate threads
+            hack.setDumbHackThreads();
+            let serverSecurity = server.hackDifficulty - server.minDifficulty;
+            weaken0.setSecurityDifference(ns.hackAnalyzeSecurity(hack.threads) + serverSecurity);
+            grow.setDumbGrowThreads();
+            weaken1.setSecurityDifference(ns.growthAnalyzeSecurity(grow.threads) + serverSecurity);
+            weaken1.setWeakenThreads();
+
+            hack.setDumbHackTime();
+            weaken0.setDumbWeakenTime();
+            grow.setDumbGrowTime();
+            weaken1.setDumbWeakenTime();
         }
 
         //Set the delay time of each script in the batch to ensure they all finish 50ms after eachother

@@ -25,6 +25,7 @@ export class Script {
 
     setExecDateTime(currentTime) {
         this.executionDateTime = this.sleepTime + currentTime;
+        return;
     }
 }
 
@@ -67,6 +68,16 @@ export class Hack extends Script {
         this.scriptTime = this.ns.formulas.hacking.hackTime(this.server, this.player);
         return;
     }
+
+    setDumbHackThreads() {
+        this.threads = this.ns.hackAnalyzeThreads(this.server.hostname, this.server.moneyMax);
+        return;
+    }
+
+    setDumbHackTime() {
+        this.scriptTime = this.ns.getHackTime(this.server.hostname, this.player.hacking);
+        return;
+    }
 }
 
 export class Weaken extends Script {
@@ -99,10 +110,16 @@ export class Weaken extends Script {
      */
     setSecurityDifference(securityIncrease) {
         this.securityDifference = securityIncrease;
+        return;
     }
 
     setWeakenTime() {
         this.scriptTime = this.ns.formulas.hacking.weakenTime(this.server, this.player);
+        return;
+    }
+
+    setDumbWeakenTime() {
+        this.scriptTime = this.ns.getWeakenTime(this.server.hostname, this.player.hacking);
         return;
     }
 }
@@ -133,6 +150,16 @@ export class Grow extends Script {
 
     setGrowTime() {
         this.scriptTime = this.ns.formulas.hacking.growTime(this.server, this.player);
+        return;
+    }
+
+    setDumbGrowThreads() {
+        this.threads = this.ns.growthAnalyze(this.server.hostname, this.server.moneyMax / 1);
+        return;
+    }
+
+    setDumbGrowTime() {
+        this.scriptTime = this.ns.getGrowTime(this.server.hostname, this.player.hacking);
         return;
     }
 }

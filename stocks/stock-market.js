@@ -1,7 +1,7 @@
 import { Stocks } from '/classes/stocks.js'
 import { currencyAbrev } from '/utils/convert-money.js'
 
-const BULL_MARKET = 0.6; //Default 0.6. A stock has a 60% chance of increasing in price
+const BULL_MARKET = 0.65; //Default 0.65. A stock has a 65% chance of increasing in price
 const BEAR_MARKET = 0.5; //Default 0.5. A stock has a 50% chance of decreasing in price.
 const MAX_CAPITAL_PERCENT = 0.6; //e.g. If player has $1T, only invest up to $600B per purchase.
 

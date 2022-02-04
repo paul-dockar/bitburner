@@ -1,7 +1,15 @@
 /** @param {NS} ns **/
 export async function main(ns) {
-    let maxNodes = parseInt(ns.args[0]);
+    let arg = 0;
+    typeof ns.args[0] != "undefined" ? arg = ns.args[0] : arg = 0;
+    let newNodes = parseInt(arg);
+
     let currentNodes = ns.hacknet.numNodes();
+    let response = await ns.prompt(`Purchase ${newNodes} new hacknet nodes, for a total of ${currentNodes + newNodes}?`)
+
+    let maxNodes;
+    response ? maxNodes = currentNodes + newNodes : maxNodes = currentNodes;
+
     const maxHacknetLevel = 200;
     const maxHacknetRam = 64;
     const maxHacknetCpu = 16;
