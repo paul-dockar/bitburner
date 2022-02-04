@@ -30,10 +30,10 @@ function printServers(ns, levelSortedServerList) {
     };
 
     ns.tprint("\r\n\r\n\r\n \/$$$$$$$$ \/$$$$$$ \/$$   \/$$ \/$$$$$$$ \r\n| $$_____\/|_  $$_\/| $$$ | $$| $$__  $$\r\n| $$        | $$  | $$$$| $$| $$  \\ $$\r\n| $$$$$     | $$  | $$ $$ $$| $$  | $$\r\n| $$__\/     | $$  | $$  $$$$| $$  | $$\r\n| $$        | $$  | $$\\  $$$| $$  | $$\r\n| $$       \/$$$$$$| $$ \\  $$| $$$$$$$\/\r\n|__\/      |______\/|__\/  \\__\/|_______\/ ");
-    const row = '| %-24s | %-5s | %-5s | %-10s | %-6s | %-6s | %-6s | %-9s | %-9s | %7s |';
-    ns.tprintf(row, "------------------------", "-----", "-----", "-------", "------", "------", "------", "---------", "---------", "-------");
-    ns.tprintf(row, "hostname", "level", "hack%", "$", "minSec", "growth", "rooted", "backdoord", "openPorts", "score");
-    ns.tprintf(row, "------------------------", "-----", "-----", "----------", "------", "------", "------", "---------", "---------", "-------");
+    const row = '| %-24s | %-5s | %-5s | %-10s | %-6s | %-6s | %-6s | %-9s | %-9s | %7s | %8s |';
+    ns.tprintf(row, "------------------------", "-----", "-----", "-------", "------", "------", "------", "---------", "---------", "-------", "--------");
+    ns.tprintf(row, "hostname", "level", "hack%", "$", "minSec", "growth", "rooted", "backdoord", "openPorts", "score", "prepared");
+    ns.tprintf(row, "------------------------", "-----", "-----", "----------", "------", "------", "------", "---------", "---------", "-------", "--------");
     for (let server of levelSortedServerList) {
         let so = ns.getServer(server[0]);
         let hostname = so.hostname;
@@ -48,8 +48,14 @@ function printServers(ns, levelSortedServerList) {
 
         let { hackPerc, score } = calculateScore(ns, so, money, minSec);
 
+        let isServerPrepared = (so) => {
+            if (so.moneyAvailable != so.moneyMax) return false;
+            if (so.hackDifficulty != so.minDifficulty) return false;
+            return true;
+        }
+
         if (!isPlayerOwned) {
-            ns.tprintf(row, hostname, level, ns.nFormat(hackPerc, '0%'), ns.nFormat(money, '($ 0.00 a)'), minSec, serverGrowth, isRooted, isBackdoor, openPorts, ns.nFormat(score, '0.0a'));
+            ns.tprintf(row, hostname, level, ns.nFormat(hackPerc, '0%'), ns.nFormat(money, '($ 0.00 a)'), minSec, serverGrowth, isRooted, isBackdoor, openPorts, ns.nFormat(score, '0.0a'), isServerPrepared(so));
         }
     }
 }

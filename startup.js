@@ -8,8 +8,13 @@ export async function main(ns) {
     await ns.sleep(500);
 
     let target = "n00dles";
-    await ns.run(prepareServerScriptPath, 1, target);
-    await ns.sleep(1e4);
+    let pid = await ns.run(prepareServerScriptPath, 1, target);
+
+    let ps = ns.ps("home");
+    while (ps.length > 1) {
+        ps = ns.ps("home");
+        await ns.sleep(1000);
+    }
 
     await ns.run(smartHackScriptPath, 1, target);
 }

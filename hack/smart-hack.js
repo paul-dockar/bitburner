@@ -9,9 +9,6 @@ const prepareScriptPath = '/hack/prepare.js';
 
 /** @param {NS} ns **/
 export async function main(ns) {
-    let enableTail = await ns.prompt("Tail log?");
-    if (enableTail) ns.tail();
-
     let serverList = treeSearchAlgorithm(ns);
     let runningTargets = [];
     let target = findNextServer(ns, serverList, runningTargets);
@@ -167,6 +164,7 @@ function loggingStyle(ns) {
             logging = true;
             break;
         case 'full':
+            ns.tail();
             logging = true;
             break;
         default:

@@ -38,11 +38,6 @@ async function prepareServer(ns, server) {
     const row = '| %6s | %-25s | %-25s | %-11s |';
     ns.tprintf(row, "SCRIPT", "startDateTime", "finishDateTime", "Result");
 
-    if (!ns.fileExists("Formulas.exe")) {
-        ns.tprint("Buy Formulas.exe to run this script");
-        ns.exit;
-    }
-
     const HOST = ns.getHostname();
     const MAX_RAM = ns.getServerMaxRam(HOST);
     const USED_RAM = ns.getServerUsedRam(HOST);
@@ -66,7 +61,6 @@ async function prepareServer(ns, server) {
         grow.setGrowTime();
         weaken1.setWeakenTime();
     } else {
-        ns.tprint("no formulas.exe");
         //If formulas.exe is not purchased, use inefficient method to calculate threads
         let serverSecurity = server.hackDifficulty - server.minDifficulty;
         weaken0.setSecurityDifference(serverSecurity);
