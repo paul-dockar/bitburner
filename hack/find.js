@@ -9,8 +9,8 @@ export async function main(ns) {
     let levelSortedServerList = sortByLevel(ns, serverList);
     printServers(ns, levelSortedServerList);
 
-    const runningServers = ['blade', 'ecorp', 'megacorp'];
-    findNextServer(ns, serverList, runningServers);
+    // const runningServers = ['blade', 'ecorp', 'megacorp'];
+    // findNextServer(ns, serverList, runningServers);
 }
 
 /**
@@ -127,7 +127,7 @@ export function findNextServer(ns, serverList, runningServers) {
         for (let runningServer of runningServers) {
             if (runningServer === allServers[0]) {
                 let removed = scoreSortedServerMap.delete(allServers[0]);
-                ns.tprint(removed);
+                //ns.tprint(removed);
             }
 
         }

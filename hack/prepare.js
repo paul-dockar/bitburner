@@ -6,6 +6,7 @@ import { getCpuCores } from '/utils/server-info.js';
 /** @param {NS} ns **/
 export async function main(ns) {
     disableLogs(ns);
+    ns.tail();
 
     let serverList = getServersFromParams(ns);
     await prepareServerList(ns, serverList);
@@ -20,7 +21,7 @@ export async function main(ns) {
 export async function prepareServerList(ns, serverList) {
     for (let serverObject of serverList) {
         let server = ns.getServer(serverObject.hostname);
-        if (!server.purchasedByPlayer && server.moneyAvailable != server.moneyMax) {
+        if (!server.purchasedByPlayer && server.moneyAvailable != server.moneyMax || server.hackDifficulty != server.minDifficulty) {
             await prepareServer(ns, server);
         }
     }
@@ -34,8 +35,6 @@ export async function prepareServerList(ns, serverList) {
  * @returns
  */
 async function prepareServer(ns, server) {
-    disableLogs(ns);
-
     if (!ns.fileExists("Formulas.exe")) {
         ns.tprint("Buy Formulas.exe to run this script");
         ns.exit;

@@ -2,6 +2,8 @@ import { disableLogs } from '/utils/scripts.js';
 import { getMaxTimeFromBatch, getSumRamFromBatch, isRamAvailable, TIME_DELAY_BETWEEN_WORKERS, TIME_DELAY_BETWEEN_BATCHES } from '/hack/utils/hack-helper.js';
 import { Hack, Grow, Weaken } from '/classes/batch.js';
 import { getCpuCores } from '/utils/server-info.js';
+import { treeSearchAlgorithm } from '/utils/tree-search-algorithm.js';
+import { findNextServer } from '/hack/find.js';
 
 /** @param {NS} ns **/
 export async function main(ns) {
@@ -10,7 +12,7 @@ export async function main(ns) {
 
     let serverList = treeSearchAlgorithm(ns);
     let runningTargets = [];
-    let target = findNextServer(serverList);
+    let target = findNextServer(ns, serverList, runningTargets);
 
     let player = ns.getPlayer();
     let server = ns.getServer(ns.args[0]);

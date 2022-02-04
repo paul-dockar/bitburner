@@ -24,6 +24,7 @@ export function getServersFromParams(ns) {
         let server = new TreeNode(arg);
         serverList.push(server);
     }
+
     return serverList;
 }
 
