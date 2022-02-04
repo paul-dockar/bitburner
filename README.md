@@ -8,8 +8,6 @@ In root directory:
 run startup.js
 ```
 
-
-
 ## Hacknet nodes
 ```
 run hacknet/upgrade-hacknet-node.js {number}
@@ -18,15 +16,21 @@ run hacknet/upgrade-hacknet-node.js {number}
 |  --- | --- | --- |
 |  number | number | How many new servers to purchase |
 
+
 ## Hack
+### Find
 ```
 run hack/find.js
 ```
 Will print to terminal all servers in the world and sort them by level
-
-
-
-
+### Prepare
+```
+run hack/prepare.js {target}
+```
+|  Argument | Type | Description |
+|  --- | --- | --- |
+|  target | string | Target server to prepare for hacking. Can be server hostname or "all" to do everything |
+### HWGW algorithm
 ```
 run hack/smart-hack.js {target} {loggingArg}
 ```
