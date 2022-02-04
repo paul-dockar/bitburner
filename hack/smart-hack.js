@@ -5,6 +5,8 @@ import { getCpuCores } from '/utils/server-info.js';
 import { treeSearchAlgorithm } from '/utils/tree-search-algorithm.js';
 import { findNextServer } from '/hack/find.js';
 
+const prepareScriptPath = '/hack/prepare.js';
+
 /** @param {NS} ns **/
 export async function main(ns) {
     let enableTail = await ns.prompt("Tail log?");
@@ -33,8 +35,13 @@ export async function main(ns) {
     }
 
     if (!isServerPrepared(server)) {
-        ns.tprint(`Server ${server.hostname} must be prepared beforehand. Aborting script`);
-        ns.exit();
+        let response = await ns.prompt(`Server has not been prepared. Do you wish to prepare ${server.hostname}`);
+        if (response) {
+            ns.run(prepareScriptPath, 1, server.hostname);
+        } else {
+            ns.tprint(`Server ${server.hostname} must be prepared beforehand. Aborting script`);
+            ns.exit();
+        }
     }
 
     let allRunningBatchFinishTimes = [];
