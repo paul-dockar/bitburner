@@ -55,8 +55,8 @@ async function prepareServer(ns, server) {
     let weaken1 = new Weaken(ns, server, player);
 
     if (ns.fileExists("Formulas.exe")) {
-        let serverSecurity = server.hackDifficulty - server.minDifficulty;
-        weaken0.setSecurityDifference(ns.hackAnalyzeSecurity(hack.threads) + serverSecurity);
+        let serverSecurity = server.hackDifficulty;
+        weaken0.setSecurityDifference(serverSecurity);
         weaken0.setWeakenThreads();
         grow.setGrowThreads();
         weaken1.setSecurityDifference(ns.growthAnalyzeSecurity(grow.threads) + serverSecurity);
@@ -69,7 +69,7 @@ async function prepareServer(ns, server) {
         ns.tprint("no formulas.exe");
         //If formulas.exe is not purchased, use inefficient method to calculate threads
         let serverSecurity = server.hackDifficulty - server.minDifficulty;
-        weaken0.setSecurityDifference(ns.hackAnalyzeSecurity(hack.threads) + serverSecurity);
+        weaken0.setSecurityDifference(serverSecurity);
         grow.setDumbGrowThreads();
         weaken1.setSecurityDifference(ns.growthAnalyzeSecurity(grow.threads) + serverSecurity);
         weaken1.setWeakenThreads();
