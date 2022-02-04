@@ -35,6 +35,9 @@ export async function prepareServerList(ns, serverList) {
  * @returns
  */
 async function prepareServer(ns, server) {
+    const row = '| %6s | %-25s | %-25s | %-11s |';
+    ns.tprintf(row, "SCRIPT", "startDateTime", "finishDateTime", "Result");
+
     if (!ns.fileExists("Formulas.exe")) {
         ns.tprint("Buy Formulas.exe to run this script");
         ns.exit;
@@ -51,15 +54,30 @@ async function prepareServer(ns, server) {
     let grow = new Grow(ns, server, player, CPU_CORES);
     let weaken1 = new Weaken(ns, server, player);
 
-    weaken0.setSecurityDifference(server.hackDifficulty);
-    weaken0.setWeakenThreads();
-    grow.setGrowThreads();
-    weaken1.setSecurityDifference(ns.growthAnalyzeSecurity(grow.threads));
-    weaken1.setWeakenThreads();
+    if (ns.fileExists("Formulas.exe")) {
+        let serverSecurity = server.hackDifficulty - server.minDifficulty;
+        weaken0.setSecurityDifference(ns.hackAnalyzeSecurity(hack.threads) + serverSecurity);
+        weaken0.setWeakenThreads();
+        grow.setGrowThreads();
+        weaken1.setSecurityDifference(ns.growthAnalyzeSecurity(grow.threads) + serverSecurity);
+        weaken1.setWeakenThreads();
 
-    weaken0.setWeakenTime();
-    grow.setGrowTime();
-    weaken1.setWeakenTime();
+        weaken0.setWeakenTime();
+        grow.setGrowTime();
+        weaken1.setWeakenTime();
+    } else {
+        ns.tprint("no formulas.exe");
+        //If formulas.exe is not purchased, use inefficient method to calculate threads
+        let serverSecurity = server.hackDifficulty - server.minDifficulty;
+        weaken0.setSecurityDifference(ns.hackAnalyzeSecurity(hack.threads) + serverSecurity);
+        grow.setDumbGrowThreads();
+        weaken1.setSecurityDifference(ns.growthAnalyzeSecurity(grow.threads) + serverSecurity);
+        weaken1.setWeakenThreads();
+
+        weaken0.setDumbWeakenTime();
+        grow.setDumbGrowTime();
+        weaken1.setDumbWeakenTime();
+    }
 
     let maxScriptTime = getMaxTimeFromBatch(weaken0, grow, weaken1);
     weaken0.setSleepTime(maxScriptTime, TIME_DELAY_BETWEEN_WORKERS * 1);
