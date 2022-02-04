@@ -64,6 +64,7 @@ async function prepareServer(ns, server) {
         //If formulas.exe is not purchased, use inefficient method to calculate threads
         let serverSecurity = server.hackDifficulty - server.minDifficulty;
         weaken0.setSecurityDifference(serverSecurity);
+        weaken0.setWeakenThreads();
         grow.setDumbGrowThreads();
         weaken1.setSecurityDifference(ns.growthAnalyzeSecurity(grow.threads) + serverSecurity);
         weaken1.setWeakenThreads();

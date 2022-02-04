@@ -23,8 +23,6 @@ export async function main(ns) {
         ns.tprintf(row, "SCRIPT", "startDateTime", "finishDateTime", "Result");
     }
 
-    //await ns.sleep(10000);
-
     let isServerPrepared = (server) => {
         if (server.moneyAvailable != server.moneyMax) return false;
         if (server.hackDifficulty != server.minDifficulty) return false;

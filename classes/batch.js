@@ -14,7 +14,7 @@ export class Script {
     }
 
     /**
-     * @description Calculates the required delay time for the worker scripts so they finish at the same time (20ms one after the other);
+     * @description Calculates the required delay time for the worker scripts so they finish at the same time (20ms one after the other)
      * @param {number} maxScriptTime - execution time of the script in milliseconds.
      * @returns 
      */
