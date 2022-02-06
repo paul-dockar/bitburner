@@ -94,7 +94,6 @@ export async function main(ns) {
          * @returns - false if previous batches will impact current batch execution
          */
         let isSafeToStartBatch = () => {
-            server = ns.getServer(server.hostname);
             batchEarliestFinishTime = currentTime + hack.scriptTime + hack.sleepTime - TIME_DELAY_BETWEEN_WORKERS;
 
             if (allRunningBatchFinishTimes.length === 0) {

@@ -40,9 +40,6 @@ export async function prepareServerList(ns, serverList, host) {
  * @returns
  */
 export async function prepareServer(ns, server, host) {
-    const row = '| %6s | %-25s | %-25s | %-11s |';
-    ns.tprintf(row, "SCRIPT", "startDateTime", "finishDateTime", "Result");
-
     const MAX_RAM = ns.getServerMaxRam(host);
     const USED_RAM = ns.getServerUsedRam(host);
     const CPU_CORES = getCpuCores(ns, host);
