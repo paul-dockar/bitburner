@@ -8,7 +8,7 @@ export async function main(ns) {
 
 async function removeHack(ns, targets) {
     for (let i = 0; i < targets.length; i++) {
-        let file = "hack.js"
+        let file = "/hack/dumb-hack.js"
         let target = targets[i];
 
         if (ns.scriptRunning(file, target)) {

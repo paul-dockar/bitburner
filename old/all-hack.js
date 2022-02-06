@@ -18,7 +18,7 @@ export async function main(ns) {
  */
 async function scpTransfer(ns, targets) {
     for (let i = 0; i < targets.length; i++) {
-        let file = "hack.js"
+        let file = "/hack/dumb-hack.js"
         let target = targets[i];
 
         if (!ns.fileExists(file, target)) {
@@ -37,7 +37,7 @@ async function scpTransfer(ns, targets) {
 async function hack(ns, targets, bestTarget) {
     for (let i = 0; i < targets.length; i++) {
         let target = targets[i];
-        let file = "hack.js"
+        let file = "/hack/dumb-hack.js"
         let maxRam = ns.getServerMaxRam(target);
         let scriptRam = ns.getScriptRam(file, target);
         let numberOfThreads = Math.floor(maxRam / scriptRam);

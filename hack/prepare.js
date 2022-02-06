@@ -2,6 +2,7 @@ import { disableLogs } from '/utils/scripts.js';
 import { getMaxTimeFromBatch, getSumRamFromBatch, isRamAvailable, getServersFromParams, TIME_DELAY_BETWEEN_WORKERS } from '/hack/utils/hack-helper.js';
 import { Grow, Weaken } from '/classes/batch.js';
 import { getCpuCores } from '/utils/server-info.js';
+//import { weakenScriptPath, growthScriptPath, hackScriptPath } from '/hack/utils/file-locations.js';
 
 /** @param {NS} ns **/
 export async function main(ns) {
@@ -9,7 +10,11 @@ export async function main(ns) {
     ns.tail();
 
     let serverList = getServersFromParams(ns);
-    await prepareServerList(ns, serverList);
+
+    let host;
+    typeof ns.args[1] != "undefined" ? host = ns.args[1] : host = "home";
+
+    await prepareServerList(ns, serverList, host);
 }
 
 /**
@@ -18,11 +23,11 @@ export async function main(ns) {
  * @param {array} serverList 
  * @returns 
  */
-export async function prepareServerList(ns, serverList) {
+export async function prepareServerList(ns, serverList, host) {
     for (let serverObject of serverList) {
         let server = ns.getServer(serverObject.hostname);
         if (!server.purchasedByPlayer && server.moneyAvailable != server.moneyMax || server.hackDifficulty != server.minDifficulty) {
-            await prepareServer(ns, server);
+            await prepareServer(ns, server, host);
         }
     }
     return;
@@ -34,14 +39,13 @@ export async function prepareServerList(ns, serverList) {
  * @param {string} server 
  * @returns
  */
-async function prepareServer(ns, server) {
+export async function prepareServer(ns, server, host) {
     const row = '| %6s | %-25s | %-25s | %-11s |';
     ns.tprintf(row, "SCRIPT", "startDateTime", "finishDateTime", "Result");
 
-    const HOST = ns.getHostname();
-    const MAX_RAM = ns.getServerMaxRam(HOST);
-    const USED_RAM = ns.getServerUsedRam(HOST);
-    const CPU_CORES = getCpuCores(ns, HOST);
+    const MAX_RAM = ns.getServerMaxRam(host);
+    const USED_RAM = ns.getServerUsedRam(host);
+    const CPU_CORES = getCpuCores(ns, host);
 
     let player = ns.getPlayer();
 
@@ -49,7 +53,7 @@ async function prepareServer(ns, server) {
     let grow = new Grow(ns, server, player, CPU_CORES);
     let weaken1 = new Weaken(ns, server, player);
 
-    if (ns.fileExists("Formulas.exe")) {
+    if (ns.fileExists("Formulas.exe", "home")) {
         let serverSecurity = server.hackDifficulty;
         weaken0.setSecurityDifference(serverSecurity);
         weaken0.setWeakenThreads();
@@ -81,10 +85,10 @@ async function prepareServer(ns, server) {
 
     let totalBatchRam = getSumRamFromBatch(weaken0, grow, weaken1);
     if (isRamAvailable(MAX_RAM, USED_RAM, totalBatchRam)) {
-        await ns.run(weaken0.filePath, weaken0.threads, server.hostname, weaken0.sleepTime, Math.random(1 * 1e6));
-        await ns.run(grow.filePath, grow.threads, server.hostname, grow.sleepTime, Math.random(1 * 1e6));
-        await ns.run(weaken1.filePath, weaken1.threads, server.hostname, weaken1.sleepTime, Math.random(1 * 1e6));
+        await ns.exec(weaken0.filePath, host, weaken0.threads, server.hostname, weaken0.sleepTime, Math.random(1 * 1e6));
+        await ns.exec(grow.filePath, host, grow.threads, server.hostname, grow.sleepTime, Math.random(1 * 1e6));
+        await ns.exec(weaken1.filePath, host, weaken1.threads, server.hostname, weaken1.sleepTime, Math.random(1 * 1e6));
     }
     await ns.sleep(TIME_DELAY_BETWEEN_WORKERS);
-    return;
+    return maxScriptTime;
 }

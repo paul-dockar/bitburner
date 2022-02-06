@@ -2,19 +2,16 @@ import { disableLogs } from '/utils/scripts.js';
 import { getMaxTimeFromBatch, getSumRamFromBatch, isRamAvailable, TIME_DELAY_BETWEEN_WORKERS, TIME_DELAY_BETWEEN_BATCHES } from '/hack/utils/hack-helper.js';
 import { Hack, Grow, Weaken } from '/classes/batch.js';
 import { getCpuCores } from '/utils/server-info.js';
-import { treeSearchAlgorithm } from '/utils/tree-search-algorithm.js';
-import { findNextServer } from '/hack/find.js';
 
-const prepareScriptPath = '/hack/prepare.js';
+import { prepareServer } from '/hack/prepare.js';
 
 /** @param {NS} ns **/
 export async function main(ns) {
-    let serverList = treeSearchAlgorithm(ns);
-    let runningTargets = [];
-    let target = findNextServer(ns, serverList, runningTargets);
-
     let player = ns.getPlayer();
     let server = ns.getServer(ns.args[0]);
+
+    let host;
+    typeof ns.args[1] != "undefined" ? host = ns.args[1] : host = "home";
 
     //Decide logging style based on args on startup
     let logging = loggingStyle(ns);
@@ -23,6 +20,7 @@ export async function main(ns) {
         ns.tprintf(row, "SCRIPT", "startDateTime", "finishDateTime", "Result");
     }
 
+
     let isServerPrepared = (server) => {
         if (server.moneyAvailable != server.moneyMax) return false;
         if (server.hackDifficulty != server.minDifficulty) return false;
@@ -30,22 +28,15 @@ export async function main(ns) {
     }
 
     if (!isServerPrepared(server)) {
-        let response = await ns.prompt(`Server has not been prepared. Do you wish to prepare ${server.hostname}`);
-        if (response) {
-            ns.run(prepareScriptPath, 1, server.hostname);
-        } else {
-            ns.tprint(`Server ${server.hostname} must be prepared beforehand. Aborting script`);
-            ns.exit();
-        }
+        let prepareTime = await prepareServer(ns, server, host);
+        await ns.sleep(prepareTime + 1000);
     }
 
     let allRunningBatchFinishTimes = [];
     while (true) {
-        const HOST = ns.getHostname();
-        const MAX_RAM = ns.getServerMaxRam(HOST);
-        const CPU_CORES = getCpuCores(ns, HOST);
+        const MAX_RAM = ns.getServerMaxRam(host);
+        const CPU_CORES = getCpuCores(ns, host);
 
-        server = ns.getServer(ns.args[0]);
         player = ns.getPlayer();
 
         let hack = new Hack(ns, server, player);
@@ -53,7 +44,7 @@ export async function main(ns) {
         let grow = new Grow(ns, server, player, CPU_CORES);
         let weaken1 = new Weaken(ns, server, player);
 
-        if (ns.fileExists("Formulas.exe")) {
+        if (ns.fileExists("Formulas.exe", "home")) {
             //Set the threads for each script in the batch
             hack.setHackThreads();
             let serverSecurity = server.hackDifficulty - server.minDifficulty;
@@ -102,6 +93,7 @@ export async function main(ns) {
          * @returns - false if previous batches will impact current batch execution
          */
         let isSafeToStartBatch = () => {
+            server = ns.getServer(server.hostname);
             batchEarliestFinishTime = currentTime + hack.scriptTime + hack.sleepTime - TIME_DELAY_BETWEEN_WORKERS;
 
             if (allRunningBatchFinishTimes.length === 0) {
@@ -125,15 +117,15 @@ export async function main(ns) {
         let batchEarliestFinishTime;
         if (isSafeToStartBatch()) {
             //Calculate the total ram required to run the batch, delay if ram is not enough and try again.
-            const USED_RAM = ns.getServerUsedRam(HOST);
+            const USED_RAM = ns.getServerUsedRam(host);
             let totalBatchRam = getSumRamFromBatch(hack, weaken0, grow, weaken1);
             if (isRamAvailable(MAX_RAM, USED_RAM, totalBatchRam)) {
                 allRunningBatchFinishTimes.push(batchEarliestFinishTime);
 
-                await ns.run(hack.filePath, hack.threads, server.hostname, hack.sleepTime, logging, Math.random(1 * 1e6));
-                await ns.run(weaken0.filePath, weaken0.threads, server.hostname, weaken0.sleepTime, logging, Math.random(1 * 1e6));
-                await ns.run(grow.filePath, grow.threads, server.hostname, grow.sleepTime, logging, Math.random(1 * 1e6));
-                await ns.run(weaken1.filePath, weaken1.threads, server.hostname, weaken1.sleepTime, logging, Math.random(1 * 1e6));
+                await ns.exec(hack.filePath, host, hack.threads, server.hostname, hack.sleepTime, logging, Math.random(1 * 1e6));
+                await ns.exec(weaken0.filePath, host, weaken0.threads, server.hostname, weaken0.sleepTime, logging, Math.random(1 * 1e6));
+                await ns.exec(grow.filePath, host, grow.threads, server.hostname, grow.sleepTime, logging, Math.random(1 * 1e6));
+                await ns.exec(weaken1.filePath, host, weaken1.threads, server.hostname, weaken1.sleepTime, logging, Math.random(1 * 1e6));
 
             } else {
                 //@TODO: if out of ram on home machine, shoot off to privServer slave controller
@@ -154,7 +146,7 @@ function loggingStyle(ns) {
     let loggingArg;
     let logging = false;
 
-    if (typeof ns.args[1] != "undefined") loggingArg = ns.args[1];
+    if (typeof ns.args[2] != "undefined") loggingArg = ns.args[2];
 
     switch (loggingArg) {
         case 'workers':

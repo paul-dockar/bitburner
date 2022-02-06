@@ -60,6 +60,7 @@ export class Hack extends Script {
         } catch (e) {
             this.ns.tprint(e);
             this.ns.tprint(`Server ${this.server.hostname} hack difficulty reached 100. Something went wrong. Aborting script`);
+            this.ns.tprint(`Threads = ${this.threads}, hackPercent = ${hackPercent}% hackTotalPercent = ${hackTotalPercent}%`);
             this.ns.exit();
         }
     }
@@ -154,7 +155,7 @@ export class Grow extends Script {
     }
 
     setDumbGrowThreads() {
-        this.threads = this.ns.growthAnalyze(this.server.hostname, this.server.moneyMax / 1);
+        this.threads = this.ns.growthAnalyze(Math.abs(this.server.hostname, this.server.moneyMax / 1));
         return;
     }
 

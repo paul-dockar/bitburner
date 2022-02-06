@@ -1,5 +1,5 @@
 import { treeSearchAlgorithm } from '/utils/tree-search-algorithm.js';
-import { sortMap } from '/utils/array-sort.js'
+import { sortMap } from '/utils/array-sort.js';
 
 /** @param {NS} ns **/
 export async function main(ns) {
@@ -123,19 +123,18 @@ export function sortByScore(ns, list) {
  * 
  * @param {NS} ns 
  * @param {Map} serverList 
- * @param {Array} runningServers
+ * @param {Array} runningServersArray
  * @returns {string} next server hostname
  */
-export function findNextServer(ns, serverList, runningServers) {
+export function findNextServer(ns, serverList, runningServersArray) {
     let scoreSortedServerMap = sortByScore(ns, serverList);
 
     for (let allServers of scoreSortedServerMap) {
-        for (let runningServer of runningServers) {
+        //remove servers already running from the scoreSortedServerMap
+        for (let runningServer of runningServersArray) {
             if (runningServer === allServers[0]) {
                 let removed = scoreSortedServerMap.delete(allServers[0]);
-                //ns.tprint(removed);
             }
-
         }
     }
 

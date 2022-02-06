@@ -1,9 +1,12 @@
-import { convertToInternationalCurrencySystem } from '/old/find-hack-target.js'
+import { convertToInternationalCurrencySystem } from '/old/find-hack-target.js';
 
 /** @param {NS} ns **/
 export async function main(ns) {
     const ram = 1048576;
     const prefix = "pserv-1024tb-";
+
+    //todo: get last pserver #
+
     for (let i = 0; i < 25; ++i) {
         let cost = ns.getPurchasedServerCost(ram);
         cost = convertToInternationalCurrencySystem(cost);
