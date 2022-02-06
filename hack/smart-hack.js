@@ -33,6 +33,7 @@ export async function main(ns) {
     }
 
     let allRunningBatchFinishTimes = [];
+    server = ns.getServer(server.hostname);
     while (true) {
         const MAX_RAM = ns.getServerMaxRam(host);
         const CPU_CORES = getCpuCores(ns, host);

@@ -50,14 +50,5 @@ export async function main(ns) {
 
         await ns.run(SMART_HACK, 1, target, host);
         await ns.sleep(1000);
-
-
-
-        // ns.tprint(host);
-        // ns.tprint(privateServerArray);
-        // ns.tprint(JSON.stringify(getHackTargets(serverList)));
-        // ns.tprint(`target is ${target}`);
-
     }
-
 }
