@@ -5,9 +5,18 @@ export async function main(ns) {
     const ram = 1048576;
     const prefix = "pserv-1024tb-";
 
-    //todo: get last pserver #
+    let lastServer = ns.scan("home").pop();
+    const regex = new RegExp('^.*tb-([0-9]+)');
+    let lastServerId = lastServer.match(regex);
 
-    for (let i = 0; i < 25; ++i) {
+    if (lastServerId != null) {
+        lastServerId = parseInt(lastServerId.pop());
+        lastServerId++;
+    } else {
+        lastServerId = 0;
+    }
+
+    for (let i = lastServerId; i < 25; ++i) {
         let cost = ns.getPurchasedServerCost(ram);
         cost = convertToInternationalCurrencySystem(cost);
         ns.tprint("cost of server: " + cost);
