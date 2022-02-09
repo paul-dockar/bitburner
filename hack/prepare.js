@@ -51,7 +51,7 @@ export async function prepareServer(ns, server, host) {
     let weaken1 = new Weaken(ns, server, player);
 
     if (ns.fileExists("Formulas.exe", "home")) {
-        let serverSecurity = server.hackDifficulty;
+        let serverSecurity = server.hackDifficulty - server.minDifficulty;
         weaken0.setSecurityDifference(serverSecurity);
         weaken0.setWeakenThreads();
         grow.setGrowThreads();

@@ -32,13 +32,30 @@ export async function main(ns) {
         await ns.sleep(prepareTime + 1000);
     }
 
+    let crashCount = 0;
     let allRunningBatchFinishTimes = [];
-    server = ns.getServer(server.hostname);
     while (true) {
         const MAX_RAM = ns.getServerMaxRam(host);
         const CPU_CORES = getCpuCores(ns, host);
 
         player = ns.getPlayer();
+        server = ns.getServer(ns.args[0]);
+
+        let recoverScript = () => {
+            let runningScript = ns.getRunningScript();
+            ns.tprint(`Script fucked up. Spawning new script ${runningScript.fileName}, ${runningScript.args.toString()}`);
+            ns.spawn(runningScript.filename, runningScript.threads, runningScript.args[0], runningScript.args[1]);
+        }
+
+        if (!isServerPrepared(server)) {
+            //Script cannot correctly calculate threads/wait times if a previous batch has just finished its hack/grow. Wait then try again.
+            ns.print(`tried calculating shti while server in bad state, waiting`);
+            await ns.sleep(1000);
+            crashCount++;
+
+            if (crashCount > 600) recoverScript();
+            continue;
+        }
 
         let hack = new Hack(ns, server, player);
         let weaken0 = new Weaken(ns, server, player);
@@ -119,6 +136,7 @@ export async function main(ns) {
             //Calculate the total ram required to run the batch, delay if ram is not enough and try again.
             const USED_RAM = ns.getServerUsedRam(host);
             let totalBatchRam = getSumRamFromBatch(hack, weaken0, grow, weaken1);
+            crashCount = 0;
             if (isRamAvailable(MAX_RAM, USED_RAM, totalBatchRam)) {
                 allRunningBatchFinishTimes.push(batchEarliestFinishTime);
 

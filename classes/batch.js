@@ -155,7 +155,7 @@ export class Grow extends Script {
     }
 
     setDumbGrowThreads() {
-        this.threads = this.ns.growthAnalyze(Math.abs(this.server.hostname, this.server.moneyMax / 1));
+        this.threads = this.ns.growthAnalyze(this.server.hostname, this.server.moneyMax / 1, this.cores);
         return;
     }
 

@@ -72,13 +72,15 @@ function calculateScore(ns, so, money, minSec) {
     let player = ns.getPlayer();
     let score;
     let hackPerc;
-    if (ns.fileExists("Formulas.exe")) {
+    if (ns.fileExists("Formulas.exe", "home")) {
         let weakenTime = ns.formulas.hacking.weakenTime(so, player);
+        let hackTime = ns.formulas.hacking.hackTime(so, player);
+        let growTime = ns.formulas.hacking.growTime(so, player);
         hackPerc = ns.formulas.hacking.hackChance(so, player);
-        score = Math.round(money * hackPerc * so.serverGrowth / weakenTime);
+        score = Math.round((money / (Math.max(weakenTime, hackTime, growTime))));
     } else {
         hackPerc = ns.hackAnalyzeChance(so.hostname);
-        score = Math.round((money * hackPerc) / 1 / minSec);
+        score = Math.round(money * (player.hacking - so.requiredHackingSkill) / minSec);
     }
     return { hackPerc, score };
 }
